@@ -4,6 +4,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import CardDetailsScreen from './components/CardDetails';
 import LoadingScreen from './components/LoadingScreen';
 import HomeScreen from './pages/HomeScreen';
+import MusicScreen from './pages/MusicScreen';
+import AddArtistScreen from './pages/AddArtistScreen';
 
 
 const Stack = createStackNavigator();
@@ -37,11 +39,8 @@ const App: React.FC = () => {
                 headerShown: false,
               }}
             />
-            <Stack.Screen
-              name="CardDetails"
-              component={CardDetailsScreen}
-              options={({ route }:any) => ({ title: route.params.card.title })}
-            />
+            <Stack.Screen name="Música" component={MusicScreen} />
+            <Stack.Screen name="AddArtist" component={AddArtistScreen} options={{headerTitle: 'Cadastrar Artista'}}/>
           </>
         )}
       </Stack.Navigator>

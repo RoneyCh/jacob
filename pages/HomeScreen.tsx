@@ -11,21 +11,20 @@ interface navigationProps {
 }
 
 const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
-  const cardData = [
-    { id: 1, title: 'Música', content: '' },
-    { id: 2, title: 'Eventos', content: '' },
+  const categories = [
+    { id: 1, title: 'Música' },
+    { id: 2, title: 'Esportes' }
   ];
 
   return (
     <View style={styles.container}>
-      {cardData.map((card) => (
+      {categories.map((category) => (
         <TouchableOpacity
-          key={card.id}
-          style={styles.card}
-          onPress={() => navigation.navigate('CardDetails', { card })}
+          key={category.id}
+          style={styles.categoryCard}
+          onPress={() => navigation.navigate(category.title)}
         >
-          <Text style={styles.cardTitle}>{card.title}</Text>
-          <Text>{card.content}</Text>
+          <Text style={styles.categoryTitle}>{category.title}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -34,24 +33,19 @@ const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 16,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'center',
-
   },
-  card: {
+  categoryCard: {
     backgroundColor: 'white',
     padding: 16,
     marginBottom: 16,
     borderRadius: 8,
     elevation: 4,
   },
-  cardTitle: {
+  categoryTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
 });
 
