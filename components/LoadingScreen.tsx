@@ -47,8 +47,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 48,
-    color: 'white',
-    fontFamily: 'Roboto_700Bold'
+    color: 'white'
   },
 });
 
