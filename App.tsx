@@ -6,6 +6,7 @@ import LoadingScreen from './components/LoadingScreen';
 import HomeScreen from './pages/HomeScreen';
 import MusicScreen from './pages/MusicScreen';
 import AddArtistScreen from './pages/AddArtistScreen';
+import AddLetrasScreen from './pages/AddLetrasScreen';
 
 
 const Stack = createStackNavigator();
@@ -40,7 +41,8 @@ const App: React.FC = () => {
               }}
             />
             <Stack.Screen name="Música" component={MusicScreen} />
-            <Stack.Screen name="AddArtist" component={AddArtistScreen} options={{headerTitle: 'Cadastrar Artista'}}/>
+            <Stack.Screen name="AddArtist" component={AddArtistScreen} options={{headerTitle: 'Artista'}}/>
+            <Stack.Screen name="AddLetras" component={AddLetrasScreen} options={{headerTitle: 'Letras'}}/>
           </>
         )}
       </Stack.Navigator>

@@ -17,7 +17,13 @@ const MusicScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
         style={styles.button}
         onPress={() => navigation.navigate('AddArtist')}
       >
-        <Text>Cadastrar Artista</Text>
+        <Text>Artista</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('AddLetras')}
+      >
+        <Text>Letras</Text>
       </TouchableOpacity>
     </View>
   );
