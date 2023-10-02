@@ -24,7 +24,10 @@ import {
 import { v4 as uid } from "uuid";
 import Modal from "react-native-modal"; // Importe o componente Modal do react-native-modal
 import Icon from "react-native-vector-icons/MaterialIcons"; // Importe os ícones desejados
-import SelectDropdown from 'react-native-select-dropdown'
+import SelectDropdown from 'react-native-select-dropdown';
+import { RadioButton } from 'react-native-paper';
+import axios from "axios";
+import  paramsCredentials  from '../spotifyCredentials';
 
 interface LetraProps {
   nome: string;
@@ -32,6 +35,7 @@ interface LetraProps {
   musica: string;
   letra: string;
   genero: string;
+  duracao: number;
   status: number;
   artistaId: string;
   data_insert: string;
@@ -48,42 +52,62 @@ const AddLetrasScreen = () => {
   const [musicaNome, setMusicaNome] = useState("");
   const [genero, setGenero] = useState("");
   const [letras, setLetras] = useState<LetraProps[]>([]);
+  const [status, setStatus] = useState<number>(0);
+  const [duracao, setDuracao] = useState<number>(0);
   const [artists, setArtists] = useState<ArtistProps[]>([]);
   const [isModalVisible, setModalVisible] = useState(false); // Estado para controlar a visibilidade da modal
   const [isEditModal, setEditModal] = useState(false); // Estado para controlar se a modal está em modo de edição
   const [letraToEdit, setLetraToEdit] = useState<LetraProps | null>(null); // Armazena os dados do letra a ser editado
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [letraToDelete, setLetraToDelete] = useState("");
+  const [artistData, setArtistData] = useState<any>();
+  const [selectedRadioValue, setSelectedRadioValue] = useState('0');
 
   // Referência para a coleção de letras no Firestore
   const letrasCollection = collection(db, "letters");
 
   const loadLetras = async () => {
-    try {
+    try {   
+      // Carregar letras do Firebase
       const q = query(letrasCollection, orderBy("data_insert", "desc"));
-      const unsub = onSnapshot(q, (querySnapshot) => {
-        let letraList: any = [];
-        querySnapshot.forEach((doc) => {
-          letraList.push({
-            id: doc.id,
-            ...(doc.data() as {
-              musica: string;
-              artistaId: string;
-              status: number;
-              letra: string;
-              data_insert: string;
-            }),
+      const unsub = onSnapshot(q, async (querySnapshot) => {
+          let letraList: any = [];
+          querySnapshot.forEach(async (doc) => {
+              const data = doc.data() as {
+                  musica: string;
+                  artistaId: string;
+                  status: number;
+                  duracao: number;
+                  data_insert: string;
+              };
+
+              // Buscar duração no Spotify
+              const { durationMs, genre } = await getSpotifyData(data.musica);
+              console.log(genre);
+              setDuracao(durationMs);
+              setGenero(genre);
+              letraList.push({
+                  id: doc.id,
+                  musica: data.musica,
+                  artistaId: data.artistaId,
+                  status: data.status,
+                  letra: letras,
+                  genero: genre,
+                  duracao: durationMs,
+                  data_insert: data.data_insert,
+              });
+              setLetras(letraList);
           });
-        });
-        setLetras(letraList);
       });
+
       return () => unsub();
-    } catch (error) {
+  } catch (error) {
       console.error("Erro ao carregar letras:", error);
     }
   };
   useEffect(() => {
     loadArtists();
+    loadLetras();
   }, []);
 
   const artistsCollection = collection(db, "artists");
@@ -103,6 +127,7 @@ const AddLetrasScreen = () => {
             }),
           });
         });
+        setGenero(artistList.genero);
         setArtists(artistList);
       });
       return () => unsub();
@@ -112,23 +137,70 @@ const AddLetrasScreen = () => {
   };
 
 
+async function getSpotifyData(songTitle:string, artistName = '') {
+    // get token
+    const client_id = paramsCredentials().client_id;
+    const client_secret = paramsCredentials().client_secret;
+
+    const data = 'grant_type=client_credentials';
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      auth: {
+        username: client_id,
+        password: client_secret,
+      },
+    };
+    const responseToken = await axios.post(`https://accounts.spotify.com/api/token`, data, config);
+
+    const token = responseToken.data.access_token;
+    const response = await axios.get(`https://api.spotify.com/v1/search?q=${songTitle} ${artistName}&type=track`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    
+    const trackData = response.data.tracks.items[0];
+    const durationMs = trackData.duration_ms;
+    const responseGenre = await axios.get(`https://api.spotify.com/v1/artists/${trackData.artists[0].id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+    }
+    });
+    console.log(responseGenre);
+    const genre = responseGenre.data.genres[0];
+    const trackArtistName = trackData.artists[0].name;
+
+    return {
+        durationMs,
+        genre,
+        trackArtistName
+    };
+}
+
+
   const addLetras = async () => {
     try {
-      // get artistID from combo box
-      const artistId = "1";
-      const status = 1;
-      const letra = "letra";
-      await addDoc(letrasCollection, {
-        musica: musicaNome,
-        artistId,
-        status,
-        letra,
-        data_insert: new Date(),
-      });
-      setMusicaNome("");
-      setGenero("");
-      setModalVisible(false); // Fecha a modal após o cadastro
-      loadLetras();
+      const { durationMs } = await getSpotifyData(musicaNome, artistData.label);
+
+        if(!duracao && durationMs) {
+          setDuracao(durationMs);
+        }
+        await addDoc(letrasCollection, {
+          musica: musicaNome,
+          artistId: artistData.id,
+          status,
+          letra: letras,
+          duracao,
+          data_insert: new Date(),
+        });
+        setMusicaNome("");
+        setGenero("");
+        setModalVisible(false); // Fecha a modal após o cadastro
+        loadLetras();
+
     } catch (error) {
       console.error("Erro ao adicionar letra:", error);
     }
@@ -171,9 +243,16 @@ const AddLetrasScreen = () => {
     }
   };
 
-  useEffect(() => {
-    loadLetras();
-  }, []);
+
+  const handleRadioChange = (value:string) => {
+    setSelectedRadioValue(value);
+  };
+
+  const msToMinutes = (ms:number) => {
+    var minutes = Math.floor(ms / 60000);
+    var seconds = ((ms % 60000) / 1000).toFixed(0);
+    return minutes + ":" + (Number(seconds) < 10 ? '0' : '') + seconds;
+  }
 
   return (
     <View style={styles.container}>
@@ -190,7 +269,7 @@ const AddLetrasScreen = () => {
         renderItem={({ item }) => (
           <View style={styles.letraItem}>
             <View style={styles.cardHeader}>
-              <Text style={styles.letraName}>{item.nome}</Text>
+              <Text style={styles.letraName}>{item.musica}</Text>
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   onPress={() => editLetra(item)}
@@ -249,6 +328,7 @@ const AddLetrasScreen = () => {
             <Text style={styles.modalTitle}>
               {isEditModal ? "Editar Letra" : "Novo Letra"}
             </Text>
+            <Text>Nome da Música:</Text>
             <TextInput
               style={styles.input}
               placeholder="Nome da Música"
@@ -259,7 +339,41 @@ const AddLetrasScreen = () => {
               }
               onChangeText={(text) => setMusicaNome(text)}
             />
-            <SelectDropdown data={artists.map((item) => item.nome)} onSelect={(selectedItem, index) => selectedItem} />
+            <Text>Artistas:</Text>
+            <SelectDropdown
+              dropdownStyle={styles.input}
+              data={artists.map((item) => ({
+                value: item.id, 
+                label: item.nome,
+              }))}
+              onSelect={(selectedValue, index) => {
+                setArtistData(selectedValue.id); 
+              }}
+              defaultButtonText="Selecione um artista"
+              buttonTextAfterSelection={(selectedItem, index) => {
+                return selectedItem.label;
+              }}
+              rowTextForSelection={(item, index) => item.label}
+            />
+            <RadioButton.Group onValueChange={handleRadioChange} value={selectedRadioValue}>
+              <View style={{display:'flex', flexDirection:'row'}}>
+                <Text>Não</Text>
+                <RadioButton value="0" />
+                <Text>Sim</Text>
+                <RadioButton value="1" />
+              </View>
+            </RadioButton.Group>
+            <Text>Duração da Música:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Duração da Música"
+              value={
+                isEditModal
+                  ? msToMinutes(duracao) || (letraToEdit && letraToEdit.duracao.toString()) || ""
+                  : msToMinutes(duracao)
+              }
+              onChangeText={(text) => setDuracao(Number(text))}
+            />
             <TextInput
               style={styles.input}
               placeholder="Gênero"
