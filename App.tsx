@@ -23,7 +23,7 @@ const App: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {isLoading ? (
+        {/*isLoading ? (
           <Stack.Screen
             name="Loading"
             component={LoadingScreen}
@@ -31,7 +31,7 @@ const App: React.FC = () => {
               headerShown: false,
             }}
           />
-        ) : (
+        ) :*/ (
           <>
             <Stack.Screen
               name="Home"

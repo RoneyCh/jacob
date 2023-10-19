@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, StatusBar } from 'react-native';
 import { NavigationParams, NavigationScreenProp, NavigationState } from 'react-navigation';
 
 interface navigationProps {
@@ -26,12 +26,12 @@ const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
           key={category.id}
           style={[{ marginTop: statusBarHeight }]}
         >
-          <TouchableOpacity
+          <Pressable
             style={styles.categoryCard}
             onPress={() => navigation.navigate(category.title)}
           >
             <Text style={styles.categoryTitle}>{category.title}</Text>
-          </TouchableOpacity>
+          </Pressable>
         </SafeAreaView>
       ))}
     </View>

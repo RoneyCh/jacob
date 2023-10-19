@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import {
     NavigationParams,
     NavigationScreenProp,
@@ -13,18 +13,18 @@ interface MusicScreenProps {
 const MusicScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <TouchableOpacity
+      <Pressable
         style={styles.button}
         onPress={() => navigation.navigate('AddArtist')}
       >
         <Text>Artista</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
+      </Pressable>
+      <Pressable
         style={styles.button}
         onPress={() => navigation.navigate('AddLetras')}
       >
         <Text>Letras</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };

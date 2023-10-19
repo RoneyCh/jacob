@@ -6,7 +6,7 @@ import {
   Button,
   TextInput,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   Alert,
 } from "react-native";
 import { db } from "../firebase";
@@ -142,20 +142,20 @@ const AddArtistScreen = () => {
             <View style={styles.cardHeader}>
               <Text style={styles.artistName}>{item.nome}</Text>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => editArtist(item)}
                   style={{ marginHorizontal: 15 }}
                 >
                   <Icon name="edit" size={30} color="#333" />
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                   onPress={() => {
                     setArtistToDelete(item.id);
                     setConfirmDeleteVisible(true);
                   }}
                 >
                   <Icon name="delete" size={30} color="#f00" />
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
             <Text style={styles.artistGenre}>{item.genero}</Text>
@@ -219,15 +219,15 @@ const AddArtistScreen = () => {
               }
               onChangeText={(text) => setGenero(text)}
             />
-            <TouchableOpacity
+            <Pressable
               style={styles.modalButton}
               onPress={isEditModal ? saveEditedArtist : addArtist}
             >
               <Text style={styles.modalButtonText}>
                 {isEditModal ? "Salvar Edição" : "Cadastrar Artista"}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               style={styles.modalButton}
               onPress={() => {
                 setArtistToEdit(null);
@@ -235,7 +235,7 @@ const AddArtistScreen = () => {
               }}
             >
               <Text style={styles.modalButtonText}>Fechar</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </Modal>

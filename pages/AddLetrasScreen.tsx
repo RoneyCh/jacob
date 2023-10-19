@@ -6,8 +6,8 @@ import {
   Button,
   TextInput,
   StyleSheet,
-  TouchableOpacity,
-  Alert,
+  Pressable,
+  ScrollView,
 } from "react-native";
 import { db } from "../firebase";
 import {
@@ -20,6 +20,7 @@ import {
   onSnapshot,
   DocumentData,
   setDoc,
+  getDocs,
 } from "firebase/firestore";
 import { v4 as uid } from "uuid";
 import Modal from "react-native-modal"; // Importe o componente Modal do react-native-modal
@@ -30,13 +31,11 @@ import axios from "axios";
 import  paramsCredentials  from '../spotifyCredentials';
 
 interface LetraProps {
-  nome: string;
   id: string;
   musica: string;
   letra: string;
   genero: string;
   duracao: number;
-  status: number;
   artistaId: string;
   data_insert: string;
 }
@@ -51,8 +50,8 @@ interface ArtistProps {
 const AddLetrasScreen = () => {
   const [musicaNome, setMusicaNome] = useState("");
   const [genero, setGenero] = useState("");
-  const [letras, setLetras] = useState<LetraProps[]>([]);
-  const [status, setStatus] = useState<number>(0);
+  const [letrasList, setLetrasList] = useState<LetraProps[]>([]);
+  const [letras, setLetras] = useState<string>('');
   const [duracao, setDuracao] = useState<number>(0);
   const [artists, setArtists] = useState<ArtistProps[]>([]);
   const [isModalVisible, setModalVisible] = useState(false); // Estado para controlar a visibilidade da modal
@@ -61,50 +60,59 @@ const AddLetrasScreen = () => {
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [letraToDelete, setLetraToDelete] = useState("");
   const [artistData, setArtistData] = useState<any>();
-  const [selectedRadioValue, setSelectedRadioValue] = useState('0');
+  const [dataFromLetras, setDataFromLetras] = useState<any>();
 
   // Referência para a coleção de letras no Firestore
   const letrasCollection = collection(db, "letters");
 
   const loadLetras = async () => {
-    try {   
-      // Carregar letras do Firebase
+    try {
       const q = query(letrasCollection, orderBy("data_insert", "desc"));
-      const unsub = onSnapshot(q, async (querySnapshot) => {
-          let letraList: any = [];
-          querySnapshot.forEach(async (doc) => {
-              const data = doc.data() as {
-                  musica: string;
-                  artistaId: string;
-                  status: number;
-                  duracao: number;
-                  data_insert: string;
-              };
+      const querySnapshot = await getDocs(q);
+      
+      const letraListPromises: Promise<LetraProps>[] = [];
+  
+      querySnapshot.forEach((doc) => {
+        const data = doc.data() as {
+          musica: string;
+          artistaId: string;
+          duracao: number;
+          data_insert: string;
+          letra: string;
+        };
 
-              // Buscar duração no Spotify
-              const { durationMs, genre } = await getSpotifyData(data.musica);
-              console.log(genre);
-              setDuracao(durationMs);
-              setGenero(genre);
-              letraList.push({
-                  id: doc.id,
-                  musica: data.musica,
-                  artistaId: data.artistaId,
-                  status: data.status,
-                  letra: letras,
-                  genero: genre,
-                  duracao: durationMs,
-                  data_insert: data.data_insert,
-              });
-              setLetras(letraList);
-          });
+        setDataFromLetras(data);
+  
+        letraListPromises.push(
+          (async () => {
+            let { durationMs, genre } = await getSpotifyData(data.musica);
+            if (data.duracao) {
+              durationMs = data.duracao;
+            }
+  
+            return {
+              id: doc.id,
+              musica: data.musica,
+              artistaId: data.artistaId,
+              letra: data.letra,
+              genero: genre,
+              duracao: durationMs,
+              data_insert: data.data_insert,
+            };
+          })()
+        );
       });
-
-      return () => unsub();
-  } catch (error) {
+  
+      const letraList = await Promise.all(letraListPromises);
+  
+      setLetrasList(letraList);
+    } catch (error) {
       console.error("Erro ao carregar letras:", error);
     }
   };
+  
+  
+  
   useEffect(() => {
     loadArtists();
     loadLetras();
@@ -169,7 +177,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
         'Authorization': `Bearer ${token}`
     }
     });
-    console.log(responseGenre);
+
     const genre = responseGenre.data.genres[0];
     const trackArtistName = trackData.artists[0].name;
 
@@ -184,14 +192,13 @@ async function getSpotifyData(songTitle:string, artistName = '') {
   const addLetras = async () => {
     try {
       const { durationMs } = await getSpotifyData(musicaNome, artistData.label);
-
         if(!duracao && durationMs) {
           setDuracao(durationMs);
         }
+
         await addDoc(letrasCollection, {
           musica: musicaNome,
-          artistId: artistData.id,
-          status,
+          artistId: artistData.value,
           letra: letras,
           duracao,
           data_insert: new Date(),
@@ -208,7 +215,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
 
   const deleteLetra = async (id: string) => {
     try {
-      const letraRef = doc(db, "letras", id);
+      const letraRef = doc(db, "letters", id);
       await deleteDoc(letraRef);
       loadLetras();
       setConfirmDeleteVisible(false);
@@ -220,6 +227,17 @@ async function getSpotifyData(songTitle:string, artistName = '') {
 
   const editLetra = (letra: LetraProps) => {
     // Preenche a modal com os dados do letra selecionado
+ ;
+    const letraData = Object.entries(dataFromLetras);
+    let artistId = '';
+    for(let i = 0; i < letraData.length; i++) {
+      for(let j = 0; j < letraData[i].length; j++) {
+        if(letraData[i][j] === 'artistId') {
+          artistId = letraData[i][j+1] as string;
+        }
+      }
+    }
+    letra.artistaId = artistId;
     setLetraToEdit(letra);
     setEditModal(true);
     setModalVisible(true);
@@ -228,11 +246,15 @@ async function getSpotifyData(songTitle:string, artistName = '') {
   const saveEditedLetra = async () => {
     try {
       if (letraToEdit) {
-        const letraRef = doc(db, "letras", letraToEdit.id);
+        const letraRef = doc(db, "letters", letraToEdit.id);
         const letraData: DocumentData = {
-          nome: musicaNome || letraToEdit.nome,
+          musica: musicaNome || letraToEdit.musica,
+          letra: letras || letraToEdit.letra,
+          duracao: duracao || letraToEdit.duracao,
           genero: genero || letraToEdit.genero,
+          artistaId: artistData.value,
         };
+        console.log(letraData);
         await setDoc(letraRef, letraData, { merge: true }); // Atualiza os campos nome e genero, mantendo os outros campos intactos
         setLetraToEdit(null);
         setModalVisible(false);
@@ -241,11 +263,6 @@ async function getSpotifyData(songTitle:string, artistName = '') {
     } catch (error) {
       console.error("Erro ao editar letra:", error);
     }
-  };
-
-
-  const handleRadioChange = (value:string) => {
-    setSelectedRadioValue(value);
   };
 
   const msToMinutes = (ms:number) => {
@@ -264,27 +281,27 @@ async function getSpotifyData(songTitle:string, artistName = '') {
         }}
       />
       <FlatList
-        data={letras}
+        data={letrasList}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.letraItem}>
             <View style={styles.cardHeader}>
               <Text style={styles.letraName}>{item.musica}</Text>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => editLetra(item)}
                   style={{ marginHorizontal: 15 }}
                 >
                   <Icon name="edit" size={30} color="#333" />
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                   onPress={() => {
                     setLetraToDelete(item.id);
                     setConfirmDeleteVisible(true);
                   }}
                 >
                   <Icon name="delete" size={30} color="#f00" />
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
             <Text style={styles.letraGenre}>{item.genero}</Text>
@@ -321,12 +338,13 @@ async function getSpotifyData(songTitle:string, artistName = '') {
           </View>
         </View>
       </Modal>
-
+                  
       <Modal isVisible={isModalVisible}>
+        <ScrollView>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {isEditModal ? "Editar Letra" : "Novo Letra"}
+              {isEditModal ? "Editar Letra" : "Nova Letra"}
             </Text>
             <Text>Nome da Música:</Text>
             <TextInput
@@ -341,58 +359,66 @@ async function getSpotifyData(songTitle:string, artistName = '') {
             />
             <Text>Artistas:</Text>
             <SelectDropdown
-              dropdownStyle={styles.input}
               data={artists.map((item) => ({
                 value: item.id, 
                 label: item.nome,
               }))}
               onSelect={(selectedValue, index) => {
-                setArtistData(selectedValue.id); 
+                setArtistData(selectedValue); 
               }}
-              defaultButtonText="Selecione um artista"
+              defaultButtonText={
+                letraToEdit?.artistaId ? artists.find((artist) => artist.id === letraToEdit?.artistaId)?.nome : "Selecione um artista"
+              }
               buttonTextAfterSelection={(selectedItem, index) => {
                 return selectedItem.label;
               }}
               rowTextForSelection={(item, index) => item.label}
             />
-            <RadioButton.Group onValueChange={handleRadioChange} value={selectedRadioValue}>
-              <View style={{display:'flex', flexDirection:'row'}}>
-                <Text>Não</Text>
-                <RadioButton value="0" />
-                <Text>Sim</Text>
-                <RadioButton value="1" />
-              </View>
-            </RadioButton.Group>
+
             <Text>Duração da Música:</Text>
             <TextInput
               style={styles.input}
               placeholder="Duração da Música"
               value={
                 isEditModal
-                  ? msToMinutes(duracao) || (letraToEdit && letraToEdit.duracao.toString()) || ""
-                  : msToMinutes(duracao)
+                    ? msToMinutes(letraToEdit?.duracao || 0)
+                  : letraToEdit?.duracao.toString()
               }
               onChangeText={(text) => setDuracao(Number(text))}
             />
+            <Text>Gênero:</Text>
             <TextInput
               style={styles.input}
               placeholder="Gênero"
               value={
                 isEditModal
-                  ? genero || (letraToEdit && letraToEdit.genero) || ""
-                  : genero
+                  ? letraToEdit?.genero || ""
+                  : letraToEdit?.genero
               }
               onChangeText={(text) => setGenero(text)}
             />
-            <TouchableOpacity
+            <Text>Letra:</Text>
+            <TextInput
+              style={[styles.input, { height: 200 }]}  // Defina a altura desejada aqui (por exemplo, 200)
+              multiline={true}  // Habilita a funcionalidade de várias linhas
+              placeholder="Escreva a letra aqui"
+              value={
+                isEditModal
+                  ? letras || (letraToEdit && letraToEdit.letra) || ""
+                  : letras
+              }
+              onChangeText={(text) => setLetras(text)}
+            />
+
+            <Pressable
               style={styles.modalButton}
               onPress={isEditModal ? saveEditedLetra : addLetras}
             >
               <Text style={styles.modalButtonText}>
                 {isEditModal ? "Salvar Edição" : "Cadastrar Letra"}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               style={styles.modalButton}
               onPress={() => {
                 setLetraToEdit(null);
@@ -400,9 +426,10 @@ async function getSpotifyData(songTitle:string, artistName = '') {
               }}
             >
               <Text style={styles.modalButtonText}>Fechar</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
+        </ScrollView>
       </Modal>
     </View>
   );
