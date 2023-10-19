@@ -61,6 +61,8 @@ const AddLetrasScreen = () => {
   const [letraToDelete, setLetraToDelete] = useState("");
   const [artistData, setArtistData] = useState<any>();
   const [dataFromLetras, setDataFromLetras] = useState<any>();
+  const [letraToView, setLetraToView] = useState<string>('');
+  const [viewModalVisible, setViewModalVisible] = useState(false);
 
   // Referência para a coleção de letras no Firestore
   const letrasCollection = collection(db, "letters");
@@ -289,6 +291,14 @@ async function getSpotifyData(songTitle:string, artistName = '') {
               <Text style={styles.letraName}>{item.musica}</Text>
               <View style={styles.buttonContainer}>
                 <Pressable
+                  onPress={() => {
+                    setLetraToView(item.letra); 
+                    setViewModalVisible(true);
+                  }}
+                >
+                  <Icon name="visibility" size={30} color="#007bff" />
+                </Pressable>
+                <Pressable
                   onPress={() => editLetra(item)}
                   style={{ marginHorizontal: 15 }}
                 >
@@ -338,6 +348,22 @@ async function getSpotifyData(songTitle:string, artistName = '') {
           </View>
         </View>
       </Modal>
+
+      <Modal isVisible={viewModalVisible}>
+        <ScrollView>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+          <Text style={styles.lyricsText}>{letraToView}</Text>
+          <Pressable
+            style={styles.modalButton}
+            onPress={() => setViewModalVisible(false)}
+          >
+          <Text style={styles.modalButtonText}>Fechar</Text>
+          </Pressable>
+          </View>
+        </View>
+        </ScrollView>
+      </Modal>
                   
       <Modal isVisible={isModalVisible}>
         <ScrollView>
@@ -374,29 +400,21 @@ async function getSpotifyData(songTitle:string, artistName = '') {
               }}
               rowTextForSelection={(item, index) => item.label}
             />
-
-            <Text>Duração da Música:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Duração da Música"
-              value={
-                isEditModal
+            {isEditModal ? ( 
+            <><Text>Duração da Música:</Text><TextInput
+                  style={styles.input}
+                  placeholder="Duração da Música"
+                  value={isEditModal
                     ? msToMinutes(letraToEdit?.duracao || 0)
-                  : letraToEdit?.duracao.toString()
-              }
-              onChangeText={(text) => setDuracao(Number(text))}
-            />
-            <Text>Gênero:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Gênero"
-              value={
-                isEditModal
-                  ? letraToEdit?.genero || ""
-                  : letraToEdit?.genero
-              }
-              onChangeText={(text) => setGenero(text)}
-            />
+                    : letraToEdit?.duracao.toString()}
+                  onChangeText={(text) => setDuracao(Number(text))} /><Text>Gênero:</Text><TextInput
+                    style={styles.input}
+                    placeholder="Gênero"
+                    value={isEditModal
+                      ? letraToEdit?.genero || ""
+                      : letraToEdit?.genero}
+                    onChangeText={(text) => setGenero(text)} /></>
+            ) : null}
             <Text>Letra:</Text>
             <TextInput
               style={[styles.input, { height: 200 }]}  // Defina a altura desejada aqui (por exemplo, 200)
@@ -481,7 +499,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 8,
     padding: 16,
-    width: "80%", // Ajuste a largura conforme necessário
+    width: "100%",
   },
   modalTitle: {
     fontSize: 20,
@@ -516,6 +534,10 @@ const styles = StyleSheet.create({
   confirmDeleteButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  lyricsText: {
+    fontSize: 18,
+    marginBottom: 20,
   },
 });
 
