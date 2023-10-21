@@ -73,32 +73,35 @@ const AddLetrasScreen = () => {
       const querySnapshot = await getDocs(q);
       
       const letraListPromises: Promise<LetraProps>[] = [];
-  
+      const dataLetras: {
+        id: string; musica: string; artistaId: string; duracao: number; data_insert: string; letra: string; 
+}[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data() as {
+          id: string;
           musica: string;
           artistaId: string;
           duracao: number;
           data_insert: string;
           letra: string;
+          genero: string;
         };
 
-        setDataFromLetras(data);
-  
+        data.id = doc.id;
+
+        dataLetras.push(data);
+
         letraListPromises.push(
           (async () => {
-            let { durationMs, genre } = await getSpotifyData(data.musica);
-            if (data.duracao) {
-              durationMs = data.duracao;
-            }
+
   
             return {
               id: doc.id,
               musica: data.musica,
               artistaId: data.artistaId,
               letra: data.letra,
-              genero: genre,
-              duracao: durationMs,
+              genero: data.genero,
+              duracao: data.duracao,
               data_insert: data.data_insert,
             };
           })()
@@ -106,7 +109,7 @@ const AddLetrasScreen = () => {
       });
   
       const letraList = await Promise.all(letraListPromises);
-  
+      setDataFromLetras(dataLetras);
       setLetrasList(letraList);
     } catch (error) {
       console.error("Erro ao carregar letras:", error);
@@ -180,7 +183,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
     }
     });
 
-    const genre = responseGenre.data.genres[0];
+    const genre = responseGenre.data.genres[1];
     const trackArtistName = trackData.artists[0].name;
 
     return {
@@ -193,16 +196,16 @@ async function getSpotifyData(songTitle:string, artistName = '') {
 
   const addLetras = async () => {
     try {
-      const { durationMs } = await getSpotifyData(musicaNome, artistData.label);
-        if(!duracao && durationMs) {
-          setDuracao(durationMs);
-        }
+      const { durationMs, genre } = await getSpotifyData(musicaNome, artistData.label);
+
+        setDuracao(durationMs);
 
         await addDoc(letrasCollection, {
           musica: musicaNome,
           artistId: artistData.value,
           letra: letras,
-          duracao,
+          duracao: durationMs,
+          genero: genre,
           data_insert: new Date(),
         });
         setMusicaNome("");
@@ -229,17 +232,9 @@ async function getSpotifyData(songTitle:string, artistName = '') {
 
   const editLetra = (letra: LetraProps) => {
     // Preenche a modal com os dados do letra selecionado
- ;
-    const letraData = Object.entries(dataFromLetras);
-    let artistId = '';
-    for(let i = 0; i < letraData.length; i++) {
-      for(let j = 0; j < letraData[i].length; j++) {
-        if(letraData[i][j] === 'artistId') {
-          artistId = letraData[i][j+1] as string;
-        }
-      }
-    }
-    letra.artistaId = artistId;
+    const letraData = dataFromLetras.find((item: any) => item.id === letra.id);
+
+    letra.artistaId = letraData.artistId;
     setLetraToEdit(letra);
     setEditModal(true);
     setModalVisible(true);
@@ -254,7 +249,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
           letra: letras || letraToEdit.letra,
           duracao: duracao || letraToEdit.duracao,
           genero: genero || letraToEdit.genero,
-          artistaId: artistData.value,
+          artistId: artistData.value,
         };
         console.log(letraData);
         await setDoc(letraRef, letraData, { merge: true }); // Atualiza os campos nome e genero, mantendo os outros campos intactos
@@ -467,7 +462,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   letraItem: {
-    width: "100%", // Ocupa toda a largura
+    width: "100%",
     backgroundColor: "white",
     borderRadius: 8,
     marginVertical: 8,
