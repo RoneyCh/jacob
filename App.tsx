@@ -7,7 +7,12 @@ import HomeScreen from './pages/HomeScreen';
 import MusicScreen from './pages/MusicScreen';
 import AddArtistScreen from './pages/AddArtistScreen';
 import AddLetrasScreen from './pages/AddLetrasScreen';
+import AddRepertorioScreen from './pages/AddRepertorioScreen';
+import {decode, encode} from 'base-64'
 
+if (!global.btoa) {  global.btoa = encode }
+
+if (!global.atob) { global.atob = decode }
 
 const Stack = createStackNavigator();
 
@@ -43,6 +48,7 @@ const App: React.FC = () => {
             <Stack.Screen name="Música" component={MusicScreen} />
             <Stack.Screen name="AddArtist" component={AddArtistScreen} options={{headerTitle: 'Artista'}}/>
             <Stack.Screen name="AddLetras" component={AddLetrasScreen} options={{headerTitle: 'Letras'}}/>
+            <Stack.Screen name="AddRepertorio" component={AddRepertorioScreen} options={{headerTitle: 'Repertorio'}}/>
           </>
         )}
       </Stack.Navigator>

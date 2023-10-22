@@ -25,6 +25,12 @@ const MusicScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
       >
         <Text>Letras</Text>
       </Pressable>
+      <Pressable
+        style={styles.button}
+        onPress={() => navigation.navigate('AddRepertorio')}
+      >
+        <Text>Repertório</Text>
+      </Pressable>
     </View>
   );
 };

@@ -22,13 +22,12 @@ import {
   setDoc,
   getDocs,
 } from "firebase/firestore";
-import { v4 as uid } from "uuid";
-import Modal from "react-native-modal"; // Importe o componente Modal do react-native-modal
-import Icon from "react-native-vector-icons/MaterialIcons"; // Importe os ícones desejados
+import Modal from "react-native-modal";
+import Icon from "react-native-vector-icons/MaterialIcons";
 import SelectDropdown from 'react-native-select-dropdown';
-import { RadioButton } from 'react-native-paper';
 import axios from "axios";
 import  paramsCredentials  from '../spotifyCredentials';
+import styles from "../assets/styles/styles";
 
 interface LetraProps {
   id: string;
@@ -63,9 +62,22 @@ const AddLetrasScreen = () => {
   const [dataFromLetras, setDataFromLetras] = useState<any>();
   const [letraToView, setLetraToView] = useState<string>('');
   const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [search, setSearch] = useState('');
 
   // Referência para a coleção de letras no Firestore
   const letrasCollection = collection(db, "letters");
+
+  const handleSearch = (text: string) => {
+    setSearch(text);
+  };
+
+  const filteredLetrasList = search
+    ? letrasList.filter(item =>
+        item.musica.toLowerCase().includes(search.toLowerCase()) ||
+        item.genero.toLowerCase().includes(search.toLowerCase())
+      )
+    : letrasList;
+
 
   const loadLetras = async () => {
     try {
@@ -196,9 +208,13 @@ async function getSpotifyData(songTitle:string, artistName = '') {
 
   const addLetras = async () => {
     try {
-      const { durationMs, genre } = await getSpotifyData(musicaNome, artistData.label);
+      let { durationMs, genre } = await getSpotifyData(musicaNome, artistData.label);
 
         setDuracao(durationMs);
+
+        if(artistData.genero) {
+          genre = artistData.genero;
+        }
 
         await addDoc(letrasCollection, {
           musica: musicaNome,
@@ -270,6 +286,14 @@ async function getSpotifyData(songTitle:string, artistName = '') {
 
   return (
     <View style={styles.container}>
+      <View style={{display:"flex", flexDirection: 'row', alignItems: 'center'}}>
+        <TextInput
+          style={{ width:'80%', height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, paddingLeft: 10 }}
+          placeholder="Pesquisar..."
+          onChangeText={handleSearch}
+          value={search}
+        />
+      </View>
       <Button
         title="Cadastrar Letra"
         onPress={() => {
@@ -278,7 +302,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
         }}
       />
       <FlatList
-        data={letrasList}
+        data={filteredLetrasList}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.letraItem}>
@@ -383,6 +407,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
               data={artists.map((item) => ({
                 value: item.id, 
                 label: item.nome,
+                genero: item?.genero,
               }))}
               onSelect={(selectedValue, index) => {
                 setArtistData(selectedValue); 
@@ -448,92 +473,5 @@ async function getSpotifyData(songTitle:string, artistName = '') {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: "column",
-    padding: 16,
-  },
-  input: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-  },
-  letraItem: {
-    width: "100%",
-    backgroundColor: "white",
-    borderRadius: 8,
-    marginVertical: 8,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-  },
-  letraName: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  letraGenre: {
-    color: "#555",
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    backgroundColor: "white",
-    borderRadius: 8,
-    padding: 16,
-    width: "100%",
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-  modalButton: {
-    backgroundColor: "#007AFF", // Cor de fundo do botão
-    borderRadius: 8,
-    padding: 12,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  modalButtonText: {
-    color: "white", // Cor do texto do botão
-    fontSize: 16,
-  },
-  confirmDeleteContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  confirmDeleteContent: {
-    backgroundColor: "#FFF",
-    padding: 20,
-    borderRadius: 8,
-  },
-  confirmDeleteText: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
-  confirmDeleteButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  lyricsText: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
-});
 
 export default AddLetrasScreen;
