@@ -78,7 +78,7 @@ const AddLetrasScreen = () => {
       )
     : letrasList;
 
-
+ 
   const loadLetras = async () => {
     try {
       const q = query(letrasCollection, orderBy("data_insert", "desc"));
@@ -121,7 +121,16 @@ const AddLetrasScreen = () => {
       });
   
       const letraList = await Promise.all(letraListPromises);
+      letraList.map((item) => {
+        dataLetras.map((item2: any) => {
+          if(item2.musica == item.musica) {
+            item.artistaId = item2.artistId;
+          }
+        }
+        );
+      });
       setDataFromLetras(dataLetras);
+  
       setLetrasList(letraList);
     } catch (error) {
       console.error("Erro ao carregar letras:", error);
@@ -293,8 +302,9 @@ async function getSpotifyData(songTitle:string, artistName = '') {
           onChangeText={handleSearch}
           value={search}
         />
-      </View>
+              </View>
       <Button
+        color="#182D00"
         title="Cadastrar Letra"
         onPress={() => {
           setModalVisible(true);
@@ -305,9 +315,10 @@ async function getSpotifyData(songTitle:string, artistName = '') {
         data={filteredLetrasList}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
+          <View style={styles.letrasCard}>
           <View style={styles.letraItem}>
             <View style={styles.cardHeader}>
-              <Text style={styles.letraName}>{item.musica}</Text>
+              <Text style={styles.letraName}>{item.musica}</Text> 
               <View style={styles.buttonContainer}>
                 <Pressable
                   onPress={() => {
@@ -315,13 +326,13 @@ async function getSpotifyData(songTitle:string, artistName = '') {
                     setViewModalVisible(true);
                   }}
                 >
-                  <Icon name="visibility" size={30} color="#007bff" />
+                  <Icon name="visibility" size={30} color="#4D6333" />
                 </Pressable>
                 <Pressable
                   onPress={() => editLetra(item)}
                   style={{ marginHorizontal: 15 }}
                 >
-                  <Icon name="edit" size={30} color="#333" />
+                  <Icon name="edit" size={30} color="#4D6333" />
                 </Pressable>
                 <Pressable
                   onPress={() => {
@@ -334,7 +345,14 @@ async function getSpotifyData(songTitle:string, artistName = '') {
               </View>
             </View>
             <Text style={styles.letraGenre}>{item.genero}</Text>
+              
+            <Text style={{marginTop: 20}}>{artists.map((item2) => {
+                if(item2.id == item.artistaId) {
+                  return item2.nome;
+                }
+              })}</Text>
           </View>
+        </View>
         )}
       />
       <Modal
