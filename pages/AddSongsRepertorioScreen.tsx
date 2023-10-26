@@ -21,6 +21,8 @@ import {
   DocumentData,
   setDoc,
   getDocs,
+  getDoc,
+  where,
 } from "firebase/firestore";
 import Modal from "react-native-modal";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -28,8 +30,12 @@ import SelectDropdown from 'react-native-select-dropdown';
 import axios from "axios";
 import  paramsCredentials  from '../spotifyCredentials';
 import styles from "../assets/styles/styles";
+import { useRoute } from '@react-navigation/native';
+import Slider from '@react-native-community/slider';
 
-interface LetraProps {
+
+
+interface letrasProps {
   id: string;
   musica: string;
   letra: string;
@@ -39,6 +45,19 @@ interface LetraProps {
   data_insert: string;
 }
 
+interface repertorioProps {
+  mapaMusica: { [key: string]: number; };
+  id: string;
+  data_insert: string;
+  ordem: number[];
+  idMusica: string[];
+  artistaId: string;
+  musica: string;
+  letra: string;
+  genero: string;
+  duracao: number;
+}
+
 interface ArtistProps {
   id: string;
   nome: string;
@@ -46,48 +65,61 @@ interface ArtistProps {
   data_insert: string;
 }
 
-const AddLetrasScreen = () => {
+type RouteProps = {
+  repertorioId: string;
+}
+
+const AddRepertorioScreen = () => {
+  const route = useRoute();
+  const { repertorioId: idRepertorio } = route.params as RouteProps;
+
   const [musicaNome, setMusicaNome] = useState("");
   const [genero, setGenero] = useState("");
-  const [letrasList, setLetrasList] = useState<LetraProps[]>([]);
+  const [letrasList, setLetrasList] = useState<letrasProps[]>([]);
   const [letras, setLetras] = useState<string>('');
   const [duracao, setDuracao] = useState<number>(0);
   const [artists, setArtists] = useState<ArtistProps[]>([]);
   const [isModalVisible, setModalVisible] = useState(false); // Estado para controlar a visibilidade da modal
   const [isEditModal, setEditModal] = useState(false); // Estado para controlar se a modal está em modo de edição
-  const [letraToEdit, setLetraToEdit] = useState<LetraProps | null>(null); // Armazena os dados do letra a ser editado
+  const [repertorioToEdit, setRepertorioToEdit] = useState<repertorioProps | null>(null); // Armazena os dados do letra a ser editado
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [letraToDelete, setLetraToDelete] = useState("");
-  const [artistData, setArtistData] = useState<any>();
+  const [repertorioData, setRepertorioData] = useState<any>();
   const [dataFromLetras, setDataFromLetras] = useState<any>();
   const [letraToView, setLetraToView] = useState<string>('');
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [search, setSearch] = useState('');
+  const [repertoriosList, setRepertoriosList] = useState<repertorioProps[]>([]);
+  const [ordem, setOrdem] = useState<number>(0);
+
 
   // Referência para a coleção de letras no Firestore
   const letrasCollection = collection(db, "letters");
+  
 
+  //const letraRef = doc(db, "letters", repertorioToEdit.id);
   const handleSearch = (text: string) => {
     setSearch(text);
   };
 
   const filteredLetrasList = search
-    ? letrasList.filter(item =>
-        item.musica.toLowerCase().includes(search.toLowerCase()) ||
-        item.genero.toLowerCase().includes(search.toLowerCase())
+    ? dataFromLetras.filter((item: { musica: { toString: () => string; }; genero: { toString: () => string; }; }) =>
+        item.musica.toString().toLowerCase().includes(search.toLowerCase()) ||
+        item.genero.toString().toLowerCase().includes(search.toLowerCase()),
       )
-    : letrasList;
+    : dataFromLetras;
 
  
-  const loadLetras = async () => {
+
+  const loadLetras = async (repertorioData: repertorioProps | '') => {
     try {
-      const q = query(letrasCollection, orderBy("data_insert", "desc"));
-      const querySnapshot = await getDocs(q);
-      
-      const letraListPromises: Promise<LetraProps>[] = [];
-      const dataLetras: {
-        id: string; musica: string; artistaId: string; duracao: number; data_insert: string; letra: string; 
-}[] = [];
+        const q = query(letrasCollection);
+        const querySnapshot = await getDocs(q);
+        const letraListPromises: Promise<letrasProps>[] = [];
+        const dataLetras: {
+          id: string; musica: string; artistaId: string; duracao: number; data_insert: string; letra: string; 
+      }[] = [];
+    
       querySnapshot.forEach((doc) => {
         const data = doc.data() as {
           id: string;
@@ -100,7 +132,6 @@ const AddLetrasScreen = () => {
         };
 
         data.id = doc.id;
-
         dataLetras.push(data);
 
         letraListPromises.push(
@@ -129,20 +160,62 @@ const AddLetrasScreen = () => {
         }
         );
       });
-      setDataFromLetras(dataLetras);
-  
+      // incluir em dataLetras somente os dados que não estão no repertorio idMusica
+      let novasLetras = dataLetras.filter((item) => {
+        if(repertorioData) {
+          if(repertorioData.idMusica.includes(item.id)) {
+            return true;
+          }
+          return false;
+        }
+        return false;
+      });
+      if (repertorioData && repertorioData.mapaMusica) {
+        novasLetras.sort((a, b) => {
+          const ordemA = repertorioData.mapaMusica[a.id]; // Obtém a ordem da música A
+          const ordemB = repertorioData.mapaMusica[b.id]; // Obtém a ordem da música B
+
+          return ordemA - ordemB; // Compara as ordens e retorna a diferença
+        });
+      }
+
+      setDataFromLetras(novasLetras);
       setLetrasList(letraList);
     } catch (error) {
       console.error("Erro ao carregar letras:", error);
     }
   };
   
-  
-  
   useEffect(() => {
+    loadRepertorio();
     loadArtists();
-    loadLetras();
+    
   }, []);
+
+
+  const loadRepertorio = async () => {
+    try {
+      const repertorioCollection = doc(db, "repertorio", idRepertorio);
+      const repertorioDoc = await getDoc(repertorioCollection);
+      const repertorioData = repertorioDoc.data() as repertorioProps;
+      const mapaMusica: {[key: string]: number} = {}; 
+      if(repertorioData && repertorioData.idMusica) {
+      for(let i = 0; i < repertorioData.idMusica.length; i++) {
+        mapaMusica[repertorioData.idMusica[i]] = repertorioData.ordem[i];
+      }
+      repertorioData.mapaMusica = mapaMusica;
+    
+      setRepertoriosList([repertorioData]);
+      loadLetras(repertorioData);
+    } else {
+      loadLetras('');
+    }
+    } catch (error) {
+      console.error("Erro ao carregar repertorio:", error);
+    }
+
+};
+
 
   const artistsCollection = collection(db, "artists");
 
@@ -214,73 +287,125 @@ async function getSpotifyData(songTitle:string, artistName = '') {
     };
 }
 
-
-  const addLetras = async () => {
+  const addSongsRepertorio = async () => {
     try {
-      let { durationMs, genre } = await getSpotifyData(musicaNome, artistData.label);
+        const repertorioRef = doc(db, "repertorio", idRepertorio);
+        const repertorioSnapshot = await getDoc(repertorioRef);
+        const dadosAntigos = repertorioSnapshot.data();
+        let novoArrayIdMusica: string[] = [];
+        let novoArrayOrdem: number[] = [];
+        if(dadosAntigos?.idMusica) {
+          const idMusicaExistente = dadosAntigos?.idMusica; 
+          const ordemExistente = dadosAntigos?.ordem;
+          const novoIdMusica = repertorioData.value; 
+          novoArrayIdMusica = [...idMusicaExistente, novoIdMusica];
 
-        setDuracao(durationMs);
-
-        if(artistData.genero) {
-          genre = artistData.genero;
+          const novaOrdem = ordem;
+          novoArrayOrdem = [...ordemExistente, novaOrdem];
+        } else {
+          novoArrayIdMusica = [repertorioData.value];
+          novoArrayOrdem = [ordem];
         }
-
-        await addDoc(letrasCollection, {
-          musica: musicaNome,
-          artistId: artistData.value,
-          letra: letras,
-          duracao: durationMs,
-          genero: genre,
+        
+        const dadosRepertorio: DocumentData = {
+          ordem: novoArrayOrdem,
+          idMusica: novoArrayIdMusica,
           data_insert: new Date(),
-        });
-        setMusicaNome("");
-        setGenero("");
-        setModalVisible(false); // Fecha a modal após o cadastro
-        loadLetras();
+        };
 
+        await setDoc(repertorioRef, dadosRepertorio, { merge: true });
+        setRepertorioToEdit(null);
+        setModalVisible(false);
+        loadRepertorio();
     } catch (error) {
-      console.error("Erro ao adicionar letra:", error);
+      console.error("Erro ao adicionar repertorio:", error);
     }
   };
 
-  const deleteLetra = async (id: string) => {
+  const removeSongFromRepertorio = async (letra: string) => {
     try {
-      const letraRef = doc(db, "letters", id);
-      await deleteDoc(letraRef);
-      loadLetras();
-      setConfirmDeleteVisible(false);
-      setLetraToDelete("");
+        const repertorioRef = doc(db, "repertorio", idRepertorio);
+        const repertorioSnapshot = await getDoc(repertorioRef);
+        const dadosAntigos = repertorioSnapshot.data();
+        const idMusicaExistente = dadosAntigos?.idMusica || [];
+
+        // Remove o ID de música do array existente
+        const novoArrayIdMusica = idMusicaExistente.filter((id: string) => id !== letra);
+
+        const dadosRepertorio: DocumentData = {
+            idMusica: novoArrayIdMusica,
+        };
+
+        await setDoc(repertorioRef, dadosRepertorio, { merge: true });
+        loadRepertorio();
+        setConfirmDeleteVisible(false);
+        setLetraToDelete("");
     } catch (error) {
-      console.error("Erro ao deletar letra:", error);
+        console.error(`Erro ao remover música do repertório: ${error}`);
     }
   };
 
-  const editLetra = (letra: LetraProps) => {
-    // Preenche a modal com os dados do letra selecionado
-    const letraData = dataFromLetras.find((item: any) => item.id === letra.id);
 
-    letra.artistaId = letraData.artistId;
-    setLetraToEdit(letra);
+  const editLetra = (dadosRepertorio: repertorioProps) => {
+    repertoriosList.map((item) => {
+      item.idMusica.filter((item2) => {
+        if(item2 == dadosRepertorio.id) {
+          setOrdem(item.ordem[item.idMusica.indexOf(item2)]);        }
+      });
+    });
+    setRepertorioToEdit(dadosRepertorio);
     setEditModal(true);
     setModalVisible(true);
   };
 
+  const editSongInRepertorio = async () => {
+    try {
+        const repertorioRef = doc(db, "repertorio", idRepertorio);
+        const repertorioSnapshot = await getDoc(repertorioRef);
+        const dadosAntigos = repertorioSnapshot.data();
+        const idMusicaExistente = dadosAntigos?.idMusica; 
+        const ordemExistente = dadosAntigos?.ordem;
+        const indiceMusicaParaEditar = idMusicaExistente.indexOf(repertorioToEdit?.id);
+
+        idMusicaExistente[indiceMusicaParaEditar] = repertorioData  && repertorioData.value ? repertorioData.value : repertorioToEdit?.id;
+
+        //const indiceOrdemParaEditar = ordemExistente.indexOf(repertorioToEdit?.id);
+        const indiceOrdemParaEditar = idMusicaExistente.indexOf(repertorioToEdit?.id);
+
+        ordemExistente[indiceOrdemParaEditar] = ordem;
+        // Restante do código permanece o mesmo
+        const dadosRepertorio: DocumentData = {
+          ordem: ordemExistente,
+          idMusica: idMusicaExistente,
+          data_insert: new Date(),
+        };
+
+
+        await setDoc(repertorioRef, dadosRepertorio, { merge: true });
+        setRepertorioToEdit(null);
+        setRepertorioData(null);
+        setModalVisible(false);
+        loadRepertorio();
+    } catch (error) {
+      console.error("Erro ao editar repertorio:", error);
+    }
+};
+
+
   const saveEditedLetra = async () => {
     try {
-      if (letraToEdit) {
-        const letraRef = doc(db, "letters", letraToEdit.id);
+      if (repertorioToEdit) {
+        const letraRef = doc(db, "repertorio", repertorioToEdit.id);
+        const idMusicaExistente = repertorioToEdit.idMusica;
         const letraData: DocumentData = {
-          musica: musicaNome || letraToEdit.musica,
-          letra: letras || letraToEdit.letra,
-          duracao: duracao || letraToEdit.duracao,
-          genero: genero || letraToEdit.genero,
-          artistId: artistData.value,
+          ordem,
+          idMusica: repertorioToEdit.idMusica,
         };
-        console.log(letraData);
+
         await setDoc(letraRef, letraData, { merge: true }); // Atualiza os campos nome e genero, mantendo os outros campos intactos
-        setLetraToEdit(null);
+        setRepertorioToEdit(null);
         setModalVisible(false);
-        loadLetras();
+        loadRepertorio();
       }
     } catch (error) {
       console.error("Erro ao editar letra:", error);
@@ -296,16 +421,26 @@ async function getSpotifyData(songTitle:string, artistName = '') {
   return (
     <View style={styles.container}>
       <View style={{display:"flex", flexDirection: 'row', alignItems: 'center'}}>
-        <TextInput
-          style={{ width:'80%', height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, paddingLeft: 10 }}
-          placeholder="Pesquisar..."
-          onChangeText={handleSearch}
-          value={search}
-        />
+        <View style={{ display:"flex", flexDirection:'row', width:'80%', height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, paddingLeft: 10 }}>
+          <Icon name="search" size={30} />
+          <TextInput
+            style={{ width: '100%', height: 40, paddingLeft: 10, overflow: 'hidden' }}
+            placeholder="Pesquisar..."
+            onChangeText={handleSearch}
+            value={search}
+          />
+        </View>
+        <Pressable
+          onPress={() => {
+            setViewModalVisible(true);
+          }}
+        >
+        <Icon name="add-circle" size={30} color="#182D00" />
+        </Pressable>
       </View>
       <Button
         color="#182D00"
-        title="Cadastrar Letra"
+        title="Adicionar música"
         onPress={() => {
           setModalVisible(true);
           setEditModal(false);
@@ -320,7 +455,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
             <View style={styles.cardHeader}>
               <Text style={styles.screenName}>{item.musica}</Text> 
               <View style={styles.buttonContainer}>
-                <Pressable
+              <Pressable
                   onPress={() => {
                     setLetraToView(item.letra); 
                     setViewModalVisible(true);
@@ -380,7 +515,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
               />
               <Button
                 title="Deletar"
-                onPress={() => deleteLetra(letraToDelete)}
+                onPress={() => removeSongFromRepertorio(letraToDelete)}
                 color="#FF0000"
               />
             </View>
@@ -409,65 +544,52 @@ async function getSpotifyData(songTitle:string, artistName = '') {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {isEditModal ? "Editar Letra" : "Nova Letra"}
+              {isEditModal ? "Editar música" : "Adicionar música"}
             </Text>
-            <Text>Nome da Música:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nome da Música"
-              defaultValue={
-                isEditModal
-                  ? letraToEdit?.musica
-                  : ''
-              }
-              onChangeText={(text) => setMusicaNome(text)}
-            />
-            <Text>Artistas:</Text>
+            <Text>Música:</Text>
             <SelectDropdown
               searchInputTxtColor="#000"
               dropdownStyle={{backgroundColor: '#CFF5C7'}}
               buttonStyle={{backgroundColor: '#CFF5C7', borderColor: '#000', borderWidth: 1, borderRadius: 5, padding: 10, width: '100%'}}
-              data={artists.map((item) => ({
+              data={letrasList.map((item) => ({
                 value: item.id, 
-                label: item.nome,
+                label: item.musica,
                 genero: item?.genero,
+                artistId: item?.artistaId,
               }))}
               onSelect={(selectedValue, index) => {
-                setArtistData(selectedValue); 
+                setRepertorioData(selectedValue);
               }}
               defaultButtonText={
-                letraToEdit?.artistaId ? artists.find((artist) => artist.id === letraToEdit?.artistaId)?.nome : "Selecione um artista"
+                repertorioToEdit?.id ? repertorioToEdit?.musica : "Selecione uma música"
               }
               buttonTextAfterSelection={(selectedItem, index) => {
-                return selectedItem.label;
+                return selectedItem.label + ' - ' + artists.find((artist) => artist.id === selectedItem.artistId)?.nome;
               }}
-              rowTextForSelection={(item, index) => item.label}
+              rowTextForSelection={(item, index) => item.label + ' - ' + artists.find((artist) => artist.id === item.artistId)?.nome}
             />
-            <Text>Letra:</Text>
+            <Text>Ordem:</Text>
             <TextInput
-              style={[styles.input, { height: 200 }]} 
+              style={styles.input}
               multiline={true} 
-              placeholder="Escreva a letra aqui"
-              defaultValue={
-                isEditModal
-                  ? letraToEdit?.letra
-                  : ''
-              }
-              onChangeText={(text) => setLetras(text)}
+              placeholder="Ordem do repertório"
+              keyboardType='numeric'              
+              defaultValue={isEditModal ? ordem.toString() : ''}
+              onChangeText={(text) => setOrdem(Number(text))}
             />
 
             <Pressable
               style={styles.modalButton}
-              onPress={isEditModal ? saveEditedLetra : addLetras}
+              onPress={isEditModal ? editSongInRepertorio : addSongsRepertorio}
             >
               <Text style={styles.modalButtonText}>
-                {isEditModal ? "Salvar Edição" : "Cadastrar Letra"}
+                {isEditModal ? "Salvar Edição" : "Adicionar Música"}
               </Text>
             </Pressable>
             <Pressable
               style={styles.modalButton}
               onPress={() => {
-                setLetraToEdit(null);
+                setRepertorioToEdit(null);
                 setModalVisible(false);
               }}
             >
@@ -482,4 +604,4 @@ async function getSpotifyData(songTitle:string, artistName = '') {
 };
 
 
-export default AddLetrasScreen;
+export default AddRepertorioScreen;

@@ -24,6 +24,7 @@ import {
 import { v4 as uid } from "uuid";
 import Modal from "react-native-modal"; // Importe o componente Modal do react-native-modal
 import Icon from "react-native-vector-icons/MaterialIcons"; // Importe os ícones desejados
+import styles from "../assets/styles/styles";
 
 interface ArtistProps {
   id: string;
@@ -41,9 +42,21 @@ const AddArtistScreen = () => {
   const [artistToEdit, setArtistToEdit] = useState<ArtistProps | null>(null); // Armazena os dados do artista a ser editado
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [artistToDelete, setArtistToDelete] = useState("");
+  const [search, setSearch] = useState('');
 
   // Referência para a coleção de artistas no Firestore
   const artistsCollection = collection(db, "artists");
+
+  const handleSearch = (text: string) => {
+    setSearch(text);
+  };
+
+  const filteredLetrasList = search
+    ? artists.filter(item =>
+        item.nome.toLowerCase().includes(search.toLowerCase()) ||
+        item.genero.toLowerCase().includes(search.toLowerCase())
+      )
+    : artists;
 
   const loadArtists = async () => {
     try {
@@ -127,7 +140,16 @@ const AddArtistScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={{display:"flex", flexDirection: 'row', alignItems: 'center'}}>
+        <TextInput
+          style={{ width:'80%', height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, paddingLeft: 10 }}
+          placeholder="Pesquisar..."
+          onChangeText={handleSearch}
+          value={search}
+        />
+      </View>
       <Button
+        color="#182D00"
         title="Cadastrar Artista"
         onPress={() => {
           setModalVisible(true);
@@ -135,12 +157,13 @@ const AddArtistScreen = () => {
         }}
       />
       <FlatList
-        data={artists}
+        data={filteredLetrasList}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.artistItem}>
+          <View style={styles.screensCard}>
+          <View style={styles.screenItem}>
             <View style={styles.cardHeader}>
-              <Text style={styles.artistName}>{item.nome}</Text>
+              <Text style={styles.screenName}>{item.nome}</Text>
               <View style={styles.buttonContainer}>
                 <Pressable
                   onPress={() => editArtist(item)}
@@ -158,7 +181,8 @@ const AddArtistScreen = () => {
                 </Pressable>
               </View>
             </View>
-            <Text style={styles.artistGenre}>{item.genero}</Text>
+            <Text style={styles.screenGenre}>{item.genero}</Text>
+          </View>
           </View>
         )}
       />
@@ -243,7 +267,7 @@ const AddArtistScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+/*const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "column",
@@ -326,5 +350,5 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 });
-
+*/
 export default AddArtistScreen;

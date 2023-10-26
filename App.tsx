@@ -8,6 +8,7 @@ import MusicScreen from './pages/MusicScreen';
 import AddArtistScreen from './pages/AddArtistScreen';
 import AddLetrasScreen from './pages/AddLetrasScreen';
 import AddRepertorioScreen from './pages/AddRepertorioScreen';
+import AddSongsRepertorioScreen from './pages/AddSongsRepertorioScreen';
 import {decode, encode} from 'base-64'
 
 if (!global.btoa) {  global.btoa = encode }
@@ -49,6 +50,7 @@ const App: React.FC = () => {
             <Stack.Screen name="AddArtist" component={AddArtistScreen} options={{headerTitle: 'Artista'}}/>
             <Stack.Screen name="AddLetras" component={AddLetrasScreen} options={{headerTitle: 'Letras'}}/>
             <Stack.Screen name="AddRepertorio" component={AddRepertorioScreen} options={{headerTitle: 'Repertorio'}}/>
+            <Stack.Screen name="AddSongsRepertorio" component={AddSongsRepertorioScreen} options={{headerTitle: 'Adicionar Músicas'}} />
           </>
         )}
       </Stack.Navigator>

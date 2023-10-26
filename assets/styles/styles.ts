@@ -7,13 +7,14 @@ const styles = StyleSheet.create({
       padding: 16,
     },
     input: {
+      backgroundColor: '#CFF5C7',
       height: 40,
       borderColor: "gray",
       borderWidth: 1,
       marginBottom: 12,
       paddingHorizontal: 8,
     },
-    letrasCard: {
+    screensCard: {
         backgroundColor: "#CAFF8A",
         borderRadius: 8,
         height: 120,
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     
     },
-    letraItem: {
+    screenItem: {
       width: "100%"
     },
     cardHeader: {
@@ -36,12 +37,12 @@ const styles = StyleSheet.create({
     buttonContainer: {
       flexDirection: "row",
     },
-    letraName: {
+    screenName: {
       fontSize: 18,
       fontWeight: "bold",
       flexShrink: 1,
     },
-    letraGenre: {
+    screenGenre: {
       color: "#555",
     },
     modalContainer: {
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
       alignItems: "center"
     },
     modalContent: {
-      backgroundColor: "#CAFF8A",
+      backgroundColor: "#E6F5C7",
       borderRadius: 8,
       padding: 16,
       width: "100%",
