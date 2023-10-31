@@ -21,7 +21,6 @@ import {
   DocumentData,
   setDoc,
 } from "firebase/firestore";
-import { v4 as uid } from "uuid";
 import Modal from "react-native-modal"; // Importe o componente Modal do react-native-modal
 import Icon from "react-native-vector-icons/MaterialIcons"; // Importe os ícones desejados
 import styles from "../assets/styles/styles";

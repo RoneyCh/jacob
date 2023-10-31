@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import CardDetailsScreen from './components/CardDetails';
 import LoadingScreen from './components/LoadingScreen';
 import HomeScreen from './pages/HomeScreen';
 import MusicScreen from './pages/MusicScreen';
+import EventScreen from './pages/EventScreen';
 import AddArtistScreen from './pages/AddArtistScreen';
 import AddLetrasScreen from './pages/AddLetrasScreen';
 import AddRepertorioScreen from './pages/AddRepertorioScreen';
 import AddSongsRepertorioScreen from './pages/AddSongsRepertorioScreen';
+import AddEventScreen from './pages/AddEventScreen';
 import {decode, encode} from 'base-64'
 
 if (!global.btoa) {  global.btoa = encode }
@@ -51,6 +52,8 @@ const App: React.FC = () => {
             <Stack.Screen name="AddLetras" component={AddLetrasScreen} options={{headerTitle: 'Letras'}}/>
             <Stack.Screen name="AddRepertorio" component={AddRepertorioScreen} options={{headerTitle: 'Repertorio'}}/>
             <Stack.Screen name="AddSongsRepertorio" component={AddSongsRepertorioScreen} options={{headerTitle: 'Adicionar Músicas'}} />
+            <Stack.Screen name="Eventos" component={EventScreen} />
+            <Stack.Screen name="AddEventos" component={AddEventScreen} options={{headerTitle: 'Adicionar Evento'}}/>
           </>
         )}
       </Stack.Navigator>

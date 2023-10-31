@@ -432,7 +432,8 @@ async function getSpotifyData(songTitle:string, artistName = '') {
         </View>
         <Pressable
           onPress={() => {
-            setViewModalVisible(true);
+            setModalVisible(true);
+            setEditModal(false);
           }}
         >
         <Icon name="add-circle" size={30} color="#182D00" />
