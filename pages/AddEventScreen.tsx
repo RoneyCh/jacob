@@ -156,6 +156,9 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
 
   const editEvento = (evento: EventoProps) => {
     // Preenche a modal com os dados do evento selecionado
+    let data_evento = evento.data_evento as any; 
+    evento.data_evento = new Date((data_evento.nanoseconds / 1000000000 + data_evento.seconds) * 1000).toLocaleString();
+    setDataEvento(new Date((data_evento.nanoseconds / 1000000000 + data_evento.seconds) * 1000));
     setEventoToEdit(evento);
     setEditModal(true);
     setModalVisible(true);
@@ -167,6 +170,8 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
         const eventoRef = doc(db, "evento", eventoToEdit.id);
         const eventoData: DocumentData = {
           nome: eventoNome || eventoToEdit.nome,
+          endereco: endereco || eventoToEdit.endereco,
+          data_evento: dataEvento || eventoToEdit.data_evento
         };
         console.log(eventoData);
         await setDoc(eventoRef, eventoData, { merge: true }); // Atualiza os campos nome e genero, mantendo os outros campos intactos
@@ -332,7 +337,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
               borderColor: '#000',
               padding: 10,
               borderRadius: 10,
-             }}>Data selecionada: {dataEvento.toLocaleString()}</Text>
+             }}>Evento marcado: { isEditModal ? eventoToEdit?.data_evento.toLocaleString() : dataEvento.toLocaleString()}</Text>
             <Pressable
               style={styles.modalButton}
               onPress={isEditModal ? saveEditedEvento : addEvento}
