@@ -31,7 +31,7 @@ import {DateTimePickerAndroid, AndroidNativeProps} from '@react-native-community
 interface EventoProps {
   id: string;
   nome:string;
-  data_evento: string;
+  data_evento: {seconds: number, nanoseconds: number};
   endereco: string;
   data_insert: string;
 }
@@ -93,7 +93,6 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
       )
     : eventosList;
 
- 
 
     const loadEvento = async () => {
       try {
@@ -157,7 +156,6 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
   const editEvento = (evento: EventoProps) => {
     // Preenche a modal com os dados do evento selecionado
     let data_evento = evento.data_evento as any; 
-    evento.data_evento = new Date((data_evento.nanoseconds / 1000000000 + data_evento.seconds) * 1000).toLocaleString();
     setDataEvento(new Date((data_evento.nanoseconds / 1000000000 + data_evento.seconds) * 1000));
     setEventoToEdit(evento);
     setEditModal(true);
@@ -177,6 +175,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
         await setDoc(eventoRef, eventoData, { merge: true }); // Atualiza os campos nome e genero, mantendo os outros campos intactos
         setEventoToEdit(null);
         setModalVisible(false);
+        setDataEvento(new Date());
         loadEvento();
       }
     } catch (error) {
@@ -184,11 +183,6 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
     }
   };
 
-  const msToMinutes = (ms:number) => {
-    var minutes = Math.floor(ms / 60000);
-    var seconds = ((ms % 60000) / 1000).toFixed(0);
-    return minutes + ":" + (Number(seconds) < 10 ? '0' : '') + seconds;
-  }
 
   return (
     <View style={styles.container}>
@@ -206,6 +200,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
           onPress={() => {
             setModalVisible(true);
             setEditModal(false);
+            setDataEvento(new Date());
           }}
         >
         <Icon name="add-circle" size={30} color="#182D00" />
@@ -217,6 +212,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
         onPress={() => {
           setModalVisible(true);
           setEditModal(false);
+          setDataEvento(new Date());
         }}
       />
       <FlatList
@@ -249,6 +245,10 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
                 </Pressable>
               </View>
             </View>
+            <Text style={styles.screenGenre}>
+              {new Date((item.data_evento.nanoseconds / 1000000000 + item.data_evento.seconds) * 1000).toLocaleString()}
+            </Text>
+
           </View>
         </View>
         )}
@@ -321,7 +321,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
               style={styles.input}
               placeholder="Digite o endereço do evento"
               defaultValue={
-                isEditModal ? eventoToEdit?.endereco : endereco
+                isEditModal ? eventoToEdit?.endereco : eventoToEdit?.endereco
               }
               onChangeText={(text) => setEndereco(text)}
             />
@@ -337,7 +337,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
               borderColor: '#000',
               padding: 10,
               borderRadius: 10,
-             }}>Evento marcado: { isEditModal ? eventoToEdit?.data_evento.toLocaleString() : dataEvento.toLocaleString()}</Text>
+             }}>{ isEditModal ? 'Evento marcado: ' + dataEvento.toLocaleString() : ''}</Text>
             <Pressable
               style={styles.modalButton}
               onPress={isEditModal ? saveEditedEvento : addEvento}
