@@ -225,7 +225,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
               <Text style={styles.screenName}>{item.nome}</Text> 
               <View style={styles.buttonContainer}>
                 <Pressable
-                  onPress={() => navigation.navigate('AddSongsEvento', {eventoId: item.id})}
+                  onPress={() => navigation.navigate('AddRepertorioEvento', {eventoId: item.id})}
                 >
                   <Icon name="touch-app" size={30} color="#4D6333" />
                 </Pressable>
@@ -245,10 +245,11 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
                 </Pressable>
               </View>
             </View>
+            <View style={{display:"flex", justifyContent: "space-between", flexDirection: "row", marginTop: 20}}>
             <Text style={styles.screenGenre}>
               {new Date((item.data_evento.nanoseconds / 1000000000 + item.data_evento.seconds) * 1000).toLocaleString()}
             </Text>
-
+            </View>
           </View>
         </View>
         )}
