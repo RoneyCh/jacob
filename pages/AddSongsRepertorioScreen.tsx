@@ -244,49 +244,6 @@ const AddRepertorioScreen = () => {
   };
 
 
-async function getSpotifyData(songTitle:string, artistName = '') {
-    // get token
-    const client_id = paramsCredentials().client_id;
-    const client_secret = paramsCredentials().client_secret;
-
-    const data = 'grant_type=client_credentials';
-
-    const config = {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      auth: {
-        username: client_id,
-        password: client_secret,
-      },
-    };
-    const responseToken = await axios.post(`https://accounts.spotify.com/api/token`, data, config);
-
-    const token = responseToken.data.access_token;
-    const response = await axios.get(`https://api.spotify.com/v1/search?q=${songTitle} ${artistName}&type=track`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    });
-    
-    const trackData = response.data.tracks.items[0];
-    const durationMs = trackData.duration_ms;
-    const responseGenre = await axios.get(`https://api.spotify.com/v1/artists/${trackData.artists[0].id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-    }
-    });
-
-    const genre = responseGenre.data.genres[1];
-    const trackArtistName = trackData.artists[0].name;
-
-    return {
-        durationMs,
-        genre,
-        trackArtistName
-    };
-}
-
   const addSongsRepertorio = async () => {
     try {
         const repertorioRef = doc(db, "repertorio", idRepertorio);
@@ -294,6 +251,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
         const dadosAntigos = repertorioSnapshot.data();
         let novoArrayIdMusica: string[] = [];
         let novoArrayOrdem: number[] = [];
+        let duracaoNova = dadosAntigos?.duracao || 0 + repertorioData?.duracao || 0;
         if(dadosAntigos?.idMusica) {
           const idMusicaExistente = dadosAntigos?.idMusica; 
           const ordemExistente = dadosAntigos?.ordem;
@@ -311,6 +269,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
           ordem: novoArrayOrdem,
           idMusica: novoArrayIdMusica,
           data_insert: new Date(),
+          duracaoTotal: duracaoNova,
         };
 
         await setDoc(repertorioRef, dadosRepertorio, { merge: true });
@@ -366,6 +325,8 @@ async function getSpotifyData(songTitle:string, artistName = '') {
         const idMusicaExistente = dadosAntigos?.idMusica; 
         const ordemExistente = dadosAntigos?.ordem;
         const indiceMusicaParaEditar = idMusicaExistente.indexOf(repertorioToEdit?.id);
+        let duracaoNova = dadosAntigos?.duracao || 0 + repertorioData?.duracao || 0;
+
 
         idMusicaExistente[indiceMusicaParaEditar] = repertorioData  && repertorioData.value ? repertorioData.value : repertorioToEdit?.id;
 
@@ -378,6 +339,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
           ordem: ordemExistente,
           idMusica: idMusicaExistente,
           data_insert: new Date(),
+          duracaoTotal: duracaoNova,
         };
 
 
@@ -488,7 +450,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
                   }
                 })}</Text>
               <Text>Duração: {msToMinutes(item.duracao)}</Text>
-              </View>
+            </View>
           </View>
         </View>
         )}
@@ -557,6 +519,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
                 label: item.musica,
                 genero: item?.genero,
                 artistId: item?.artistaId,
+                duracao: item.duracao
               }))}
               onSelect={(selectedValue, index) => {
                 setRepertorioData(selectedValue);

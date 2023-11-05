@@ -34,6 +34,7 @@ interface RepertorioProps {
   id: string;
   nome:string;
   data_insert: string;
+  duracaoTotal: number;
 }
 
 
@@ -216,6 +217,9 @@ const AddRepertorioScreen: React.FC<NavigationProps> = ({navigation}) => {
                   <Icon name="delete" size={30} color="#f00" />
                 </Pressable>
               </View>
+            </View>
+            <View style={{display:"flex", justifyContent: "space-between", flexDirection: "row", marginTop: 20}}>
+              <Text>{item.duracaoTotal ? 'Duração Total: ' + msToMinutes(item.duracaoTotal) : ''}</Text>
             </View>
           </View>
         </View>

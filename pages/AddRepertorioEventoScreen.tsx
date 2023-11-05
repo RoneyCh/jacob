@@ -28,6 +28,7 @@ import SelectDropdown from 'react-native-select-dropdown';
 import styles from "../assets/styles/styles";
 import { useRoute } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
+import { lightBlue100 } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 
 type NavigationProps = {
   navigation: NavigationProp<any>;
@@ -76,6 +77,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
   const [search, setSearch] = useState('');
   const [eventosList, setEventosList] = useState<eventoProps[]>([]);
   const [ordem, setOrdem] = useState<number>(0);
+  const [duracao, setDuracao] = useState<number>(0);
 
 
   // Referência para a coleção de repertorios no Firestore
@@ -102,13 +104,14 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
         const querySnapshot = await getDocs(q);
         const repertorioListPromises: Promise<repertoriosProps>[] = [];
         const dataRepertorios: {
-          id: string; nome: string;
+          id: string; nome: string; duracaoTotal: number;
       }[] = [];
     
       querySnapshot.forEach((doc) => {
         const data = doc.data() as {
           id: string;
           nome: string;
+          duracaoTotal: number;
         };
 
         data.id = doc.id;
@@ -126,15 +129,18 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
   
       const repertorioList = await Promise.all(repertorioListPromises);
       // incluir em dataRepertorios somente os dados que não estão no evento idRepertorio
+      let duracaoSum = 0;
       let novosRepertorios = dataRepertorios.filter((item) => {
         if(eventoData) {
           if(eventoData.idRepertorio.includes(item.id)) {
+            duracaoSum += item.duracaoTotal;
             return true;
           }
           return false;
         }
         return false;
       });
+      setDuracao(duracaoSum);
       if (eventoData && eventoData.mapaMusica) {
         novosRepertorios.sort((a, b) => {
           const ordemA = eventoData.mapaMusica[a.id]; // Obtém a ordem do repertório A
@@ -312,7 +318,11 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
       console.error("Erro ao editar evento:", error);
     }
 };
-
+const msToMinutes = (ms:number) => {
+  var minutes = Math.floor(ms / 60000);
+  var seconds = ((ms % 60000) / 1000).toFixed(0);
+  return minutes + ":" + (Number(seconds) < 10 ? '0' : '') + seconds;
+}
   return (
     <View style={styles.container}>
       <View style={{display:"flex", flexDirection: 'row', alignItems: 'center'}}>
@@ -372,18 +382,16 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
                 </Pressable>
               </View>
             </View>
-            <Text style={styles.screenGenre}>{item.genero}</Text>
             <View style={{display:"flex", justifyContent: "space-between", flexDirection: "row", marginTop: 20}}>
-              <Text>{artists.map((item2) => {
-                  if(item2.id == item.artistaId) {
-                    return item2.nome;
-                  }
-                })}</Text>
-              </View>
+              <Text>{item.duracaoTotal ? 'Duração: ' + msToMinutes(item.duracaoTotal) : ''}</Text>
+            </View>
           </View>
         </View>
         )}
       />
+      <View style={{padding: 10, borderWidth: 2, backgroundColor: '#E6F5C7'}}>
+      <Text style={{fontWeight: 'bold'}}>Duração do evento: <Text>{msToMinutes(duracao)}</Text></Text>
+      </View>
       <Modal
         isVisible={confirmDeleteVisible}
         backdropColor="#000"
