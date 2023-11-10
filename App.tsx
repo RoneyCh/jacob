@@ -11,6 +11,8 @@ import AddRepertorioScreen from './pages/AddRepertorioScreen';
 import AddSongsRepertorioScreen from './pages/AddSongsRepertorioScreen';
 import AddEventScreen from './pages/AddEventScreen';
 import AddRepertorioEventoScreen from './pages/AddRepertorioEventoScreen';
+import SignUpScreen from './pages/SignUpScreen';
+import SignInScreen from './pages/SignInScreen';
 import {decode, encode} from 'base-64'
 
 if (!global.btoa) {  global.btoa = encode }
@@ -42,10 +44,24 @@ const App: React.FC = () => {
         ) : (
           <>
             <Stack.Screen
+              name="SignIn"
+              component={SignInScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="SignUp"
+              component={SignUpScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
               name="Home"
               component={HomeScreen}
               options={{
-                headerShown: false,
+                headerShown: false
               }}
             />
             <Stack.Screen name="Música" component={MusicScreen} />
