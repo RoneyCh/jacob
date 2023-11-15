@@ -142,6 +142,12 @@ const SignUpScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
             >
                 <Text style={styles.loginButtonText}>Criar Conta</Text>
             </Pressable>
+            <Pressable
+                style={[styles.loginButton]}
+                onPress={() => navigation.navigate('SignIn')}
+            >
+                <Text style={styles.loginButtonText}>Voltar para login</Text>
+            </Pressable>
             <StatusBar style="auto" />
         </View>
     );

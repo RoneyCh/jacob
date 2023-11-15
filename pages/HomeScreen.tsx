@@ -1,18 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, SafeAreaView, StatusBar } from 'react-native';
 import { NavigationParams, NavigationScreenProp, NavigationState } from 'react-navigation';
+import { AuthContext } from '../context/AuthContext';
 
 interface navigationProps {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
 }
+interface category {
+  id: number;
+  title: string;
+}
 
 const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
-  const categories = [
+  const { userRole } = React.useContext(AuthContext);
+  let categories: category[] = [
     { id: 1, title: 'Música' },
     { id: 2, title: 'Eventos' }
   ];
+  
+  if(userRole == 0) {
+    categories = [
+      { id: 2, title: 'Eventos' },
+    ];
+  }
+  
 
   const [statusBarHeight, setStatusBarHeight] = useState<number>(0);
+
 
   useEffect(() => {
     const statusHeight = StatusBar.currentHeight || 0;

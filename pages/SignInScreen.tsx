@@ -1,7 +1,7 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
@@ -24,6 +24,7 @@ import {
     getDocs,
   } from "firebase/firestore";
 import { RadioButton } from 'react-native-paper';
+import { AuthContext } from "../context/AuthContext";
 
 
 interface MusicScreenProps {
@@ -31,6 +32,7 @@ interface MusicScreenProps {
 }
 
 const SignInScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
+    const { updateUserRole, authenticated } = useContext(AuthContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState<boolean>(false);
@@ -42,6 +44,12 @@ const SignInScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
 
     const usersCollection = collection(db, 'users');
 
+    useEffect(() => {     
+        if(authenticated) {
+            navigation.navigate('Home');
+        }
+    },[]);
+
     const signIn = async () => {
         setLoading(true);
         try {
@@ -52,6 +60,7 @@ const SignInScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
             );
             
             if(userCredential) {
+                await updateUserRole(email);
                 navigation.navigate('Home');
             }
             setLoading(false);
@@ -85,10 +94,9 @@ const SignInScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
                 <Text style={styles.loginButtonText}>Login</Text>
             </Pressable>
             <Pressable
-                style={styles.loginButton}
                 onPress={() => navigation.navigate('SignUp')}
             >
-                <Text style={styles.loginButtonText}>Criar Conta</Text>
+                <Text style={[styles.loginButtonText, {color: '#fff000'}]}>Criar Conta</Text>
             </Pressable>
             <StatusBar style="auto" />
         </View>

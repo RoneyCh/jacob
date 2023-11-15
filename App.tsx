@@ -13,7 +13,8 @@ import AddEventScreen from './pages/AddEventScreen';
 import AddRepertorioEventoScreen from './pages/AddRepertorioEventoScreen';
 import SignUpScreen from './pages/SignUpScreen';
 import SignInScreen from './pages/SignInScreen';
-import {decode, encode} from 'base-64'
+import {decode, encode} from 'base-64';
+import AuthProvider from './context/AuthContext';
 
 if (!global.btoa) {  global.btoa = encode }
 
@@ -31,51 +32,53 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        {isLoading ? (
-          <Stack.Screen
-            name="Loading"
-            component={LoadingScreen}
-            options={{
-              headerShown: false,
-            }}
-          />
-        ) : (
-          <>
+    <AuthProvider>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {isLoading ? (
             <Stack.Screen
-              name="SignIn"
-              component={SignInScreen}
+              name="Loading"
+              component={LoadingScreen}
               options={{
                 headerShown: false,
               }}
             />
-            <Stack.Screen
-              name="SignUp"
-              component={SignUpScreen}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-              options={{
-                headerShown: false
-              }}
-            />
-            <Stack.Screen name="Música" component={MusicScreen} />
-            <Stack.Screen name="AddArtist" component={AddArtistScreen} options={{headerTitle: 'Artista'}}/>
-            <Stack.Screen name="AddLetras" component={AddLetrasScreen} options={{headerTitle: 'Letras'}}/>
-            <Stack.Screen name="AddRepertorio" component={AddRepertorioScreen} options={{headerTitle: 'Repertorio'}}/>
-            <Stack.Screen name="AddSongsRepertorio" component={AddSongsRepertorioScreen} options={{headerTitle: 'Adicionar Músicas'}} />
-            <Stack.Screen name="Eventos" component={EventScreen} />
-            <Stack.Screen name="AddEventos" component={AddEventScreen} options={{headerTitle: 'Adicionar Evento'}}/>
-            <Stack.Screen name="AddRepertorioEvento" component={AddRepertorioEventoScreen} options={{headerTitle: 'Adicionar Setlist'}} />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+          ) : (
+            <>
+              <Stack.Screen
+                name="SignIn"
+                component={SignInScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="SignUp"
+                component={SignUpScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{
+                  headerShown: false
+                }}
+              />
+              <Stack.Screen name="Música" component={MusicScreen} />
+              <Stack.Screen name="AddArtist" component={AddArtistScreen} options={{headerTitle: 'Artista'}}/>
+              <Stack.Screen name="AddLetras" component={AddLetrasScreen} options={{headerTitle: 'Letras'}}/>
+              <Stack.Screen name="AddRepertorio" component={AddRepertorioScreen} options={{headerTitle: 'Repertorio'}}/>
+              <Stack.Screen name="AddSongsRepertorio" component={AddSongsRepertorioScreen} options={{headerTitle: 'Adicionar Músicas'}} />
+              <Stack.Screen name="Eventos" component={EventScreen} />
+              <Stack.Screen name="AddEventos" component={AddEventScreen} options={{headerTitle: 'Adicionar Evento'}}/>
+              <Stack.Screen name="AddRepertorioEvento" component={AddRepertorioEventoScreen} options={{headerTitle: 'Adicionar Setlist'}} />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AuthProvider>
   );
 };
 
