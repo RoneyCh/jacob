@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import styles from "../assets/styles/styles";
 import { NavigationProp } from '@react-navigation/native';
 import {DateTimePickerAndroid, AndroidNativeProps} from '@react-native-community/datetimepicker';
+import { AuthContext } from '../context/AuthContext';
 
 interface EventoProps {
   id: string;
@@ -42,6 +43,7 @@ type NavigationProps = {
 };
 
 const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
+  const { userRole } = useContext(AuthContext);
   const [eventoNome, setEventoNome] = useState("");
   const [genero, setGenero] = useState("");
   const [eventosList, setEventosList] = useState<EventoProps[]>([]);
@@ -196,6 +198,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
             value={search}
           />
         </View>
+        {userRole == 1 ? (
         <Pressable
           onPress={() => {
             setModalVisible(true);
@@ -205,7 +208,9 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
         >
         <Icon name="add-circle" size={30} color="#182D00" />
         </Pressable>
+        ) : null}
       </View>
+      {userRole == 1 ? (
       <Button
         color="#182D00"
         title="Cadastrar Evento"
@@ -215,6 +220,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
           setDataEvento(new Date());
         }}
       />
+      ) : null}
       <FlatList
         data={filteredEventosList}
         keyExtractor={(item) => item.id}
@@ -229,20 +235,21 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
                 >
                   <Icon name="touch-app" size={30} color="#4D6333" />
                 </Pressable>
-                <Pressable
-                  onPress={() => editEvento(item)}
-                  style={{ marginHorizontal: 15 }}
-                >
-                  <Icon name="edit" size={30} color="#4D6333" />
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setEventoToDelete(item.id);
-                    setConfirmDeleteVisible(true);
-                  }}
-                >
-                  <Icon name="delete" size={30} color="#f00" />
-                </Pressable>
+                {userRole == 1 ? (
+                <><Pressable
+                      onPress={() => editEvento(item)}
+                      style={{ marginHorizontal: 15 }}
+                    >
+                      <Icon name="edit" size={30} color="#4D6333" />
+                    </Pressable><Pressable
+                      onPress={() => {
+                        setEventoToDelete(item.id);
+                        setConfirmDeleteVisible(true);
+                      } }
+                    >
+                        <Icon name="delete" size={30} color="#f00" />
+                      </Pressable></>
+                ) : null}
               </View>
             </View>
             <View style={{display:"flex", justifyContent: "space-between", flexDirection: "row", marginTop: 20}}>

@@ -2,7 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 import { useContext, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View, ImageBackground } from "react-native";
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import {
@@ -72,8 +72,11 @@ const SignInScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
         }
     };
 
+    const imageLogin = require("../assets/Jacob_back_login.png");
+
     return (
         <View style={styles.container}>
+            <ImageBackground source={imageLogin} resizeMode="cover" style={styles.container}>
             <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -96,9 +99,10 @@ const SignInScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
             <Pressable
                 onPress={() => navigation.navigate('SignUp')}
             >
-                <Text style={[styles.loginButtonText, {color: '#fff000'}]}>Criar Conta</Text>
+                <Text style={[styles.loginButtonText]}>Criar Conta</Text>
             </Pressable>
             <StatusBar style="auto" />
+        </ImageBackground>
         </View>
     );
 }
@@ -109,7 +113,13 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
+        width: "100%",
+        height: "100%",
     },
+    image: {
+        flex: 1,
+        justifyContent: 'center',
+      },
     input: {
         backgroundColor: "#FFF",
         width: "90%",
@@ -120,7 +130,8 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     loginButton: {
-        backgroundColor: "#35AAFF",
+        backgroundColor: "#89589B",
+        opacity: 0.8,
         width: "90%",
         height: 45,
         alignItems: "center",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -32,7 +32,7 @@ import  paramsCredentials  from '../spotifyCredentials';
 import styles from "../assets/styles/styles";
 import { useRoute } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
-
+import { AuthContext } from '../context/AuthContext';
 
 
 interface letrasProps {
@@ -70,6 +70,8 @@ type RouteProps = {
 }
 
 const AddRepertorioScreen = () => {
+  const { userRole } = useContext(AuthContext);
+
   const route = useRoute();
   const { repertorioId: idRepertorio } = route.params as RouteProps;
 
@@ -392,6 +394,7 @@ const AddRepertorioScreen = () => {
             value={search}
           />
         </View>
+        {userRole == 1 && (
         <Pressable
           onPress={() => {
             setModalVisible(true);
@@ -400,7 +403,9 @@ const AddRepertorioScreen = () => {
         >
         <Icon name="add-circle" size={30} color="#182D00" />
         </Pressable>
+        )}
       </View>
+      {userRole == 1 && (
       <Button
         color="#182D00"
         title="Adicionar música"
@@ -409,6 +414,7 @@ const AddRepertorioScreen = () => {
           setEditModal(false);
         }}
       />
+      )}
       <FlatList
         data={filteredLetrasList}
         keyExtractor={(item) => item.id}
@@ -426,20 +432,21 @@ const AddRepertorioScreen = () => {
                 >
                   <Icon name="visibility" size={30} color="#4D6333" />
                 </Pressable>
-                <Pressable
-                  onPress={() => editLetra(item)}
-                  style={{ marginHorizontal: 15 }}
-                >
-                  <Icon name="edit" size={30} color="#4D6333" />
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setLetraToDelete(item.id);
-                    setConfirmDeleteVisible(true);
-                  }}
-                >
-                  <Icon name="delete" size={30} color="#f00" />
-                </Pressable>
+                {userRole == 1 && (
+                <><Pressable
+                      onPress={() => editLetra(item)}
+                      style={{ marginHorizontal: 15 }}
+                    >
+                      <Icon name="edit" size={30} color="#4D6333" />
+                    </Pressable><Pressable
+                      onPress={() => {
+                        setLetraToDelete(item.id);
+                        setConfirmDeleteVisible(true);
+                      } }
+                    >
+                        <Icon name="delete" size={30} color="#f00" />
+                      </Pressable></>
+                )}
               </View>
             </View>
             <Text style={styles.screenGenre}>{item.genero}</Text>

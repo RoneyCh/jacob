@@ -2,7 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ImageBackground, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import {
@@ -104,8 +104,11 @@ const SignUpScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
         }
     }
 
+    const imageLogin = require("../assets/Jacob_back_login.png");
+
     return (
         <View style={styles.container}>
+            <ImageBackground source={imageLogin} resizeMode="cover" style={styles.container}>
             <TextInput
                 style={styles.input}
                 placeholder="Nome"
@@ -125,14 +128,14 @@ const SignUpScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
                 value={password}
                 onChangeText={(text) => setPassword(text)}
             />
-            <Text style={{color: '#FFF', fontSize: 30}}>O que você é?</Text>
+            <Text style={{color: '#FFF', fontSize: 30, marginTop:10}}>O que você é?</Text>
             <RadioButton.Group onValueChange={newValue => setRole(parseInt(newValue))} value={role.toString()}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 16 }}>
-                    <RadioButton value="1" />
+                    <RadioButton uncheckedColor="white" value="1" color="white"/>
                     <Text style={{color: '#FFF', fontSize: 20}}>Organizador</Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 16 }}>
-                    <RadioButton value="0" />
+                    <RadioButton uncheckedColor="white" value="0" color="white" />
                     <Text style={{color: '#FFF', fontSize: 20}}>Público</Text>
                 </View>
             </RadioButton.Group>
@@ -143,12 +146,12 @@ const SignUpScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
                 <Text style={styles.loginButtonText}>Criar Conta</Text>
             </Pressable>
             <Pressable
-                style={[styles.loginButton]}
                 onPress={() => navigation.navigate('SignIn')}
             >
                 <Text style={styles.loginButtonText}>Voltar para login</Text>
             </Pressable>
             <StatusBar style="auto" />
+        </ImageBackground>
         </View>
     );
 }
@@ -159,6 +162,8 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
+        width: "100%",
+        height: "100%",
     },
     input: {
         backgroundColor: "#FFF",
@@ -170,7 +175,8 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     loginButton: {
-        backgroundColor: "#35AAFF",
+        backgroundColor: "#89589B",
+        opacity: 0.8,
         width: "90%",
         height: 45,
         alignItems: "center",

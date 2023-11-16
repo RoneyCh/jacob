@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -28,7 +28,7 @@ import SelectDropdown from 'react-native-select-dropdown';
 import styles from "../assets/styles/styles";
 import { useRoute } from '@react-navigation/native';
 import { NavigationProp } from '@react-navigation/native';
-import { lightBlue100 } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
+import { AuthContext } from '../context/AuthContext';
 
 type NavigationProps = {
   navigation: NavigationProp<any>;
@@ -61,6 +61,7 @@ type RouteProps = {
 }
 
 const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
+  const { userRole } = useContext(AuthContext);
   const route = useRoute();
   const { eventoId: idEvento } = route.params as RouteProps;
 
@@ -335,6 +336,7 @@ const msToMinutes = (ms:number) => {
             value={search}
           />
         </View>
+        {userRole == 1 ? (
         <Pressable
           onPress={() => {
             setModalVisible(true);
@@ -343,7 +345,9 @@ const msToMinutes = (ms:number) => {
         >
         <Icon name="add-circle" size={30} color="#182D00" />
         </Pressable>
+        ) : null}
       </View>
+      {userRole == 1 ? (
       <Button
         color="#182D00"
         title="Adicionar repertório"
@@ -352,6 +356,7 @@ const msToMinutes = (ms:number) => {
           setEditModal(false);
         }}
       />
+      ) : null}
       <FlatList
         data={filteredRepertoriosList}
         keyExtractor={(item) => item.id}
@@ -366,20 +371,21 @@ const msToMinutes = (ms:number) => {
                 >
                   <Icon name="visibility" size={30} color="#4D6333" />
                 </Pressable>
-                <Pressable
-                  onPress={() => editRepertorio(item)}
-                  style={{ marginHorizontal: 15 }}
-                >
-                  <Icon name="edit" size={30} color="#4D6333" />
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setRepertorioToDelete(item.id);
-                    setConfirmDeleteVisible(true);
-                  }}
-                >
-                  <Icon name="delete" size={30} color="#f00" />
-                </Pressable>
+                {userRole == 1 ? (
+                <><Pressable
+                      onPress={() => editRepertorio(item)}
+                      style={{ marginHorizontal: 15 }}
+                    >
+                      <Icon name="edit" size={30} color="#4D6333" />
+                    </Pressable><Pressable
+                      onPress={() => {
+                        setRepertorioToDelete(item.id);
+                        setConfirmDeleteVisible(true);
+                      } }
+                    >
+                        <Icon name="delete" size={30} color="#f00" />
+                      </Pressable></>
+                ) : null}
               </View>
             </View>
             <View style={{display:"flex", justifyContent: "space-between", flexDirection: "row", marginTop: 20}}>
