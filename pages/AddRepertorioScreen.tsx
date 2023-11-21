@@ -162,7 +162,7 @@ const AddRepertorioScreen: React.FC<NavigationProps> = ({navigation}) => {
   return (
     <View style={styles.container}>
       <View style={{display:"flex", flexDirection: 'row', alignItems: 'center'}}>
-        <View style={{ display:"flex", flexDirection:'row', width:'80%', height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, paddingLeft: 10 }}>
+      <View style={{ display:"flex", flexDirection:'row', width:'100%', height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, paddingLeft: 10, borderRadius: 40 }}>
           <Icon name="search" size={30} />
           <TextInput
             style={{ width: '100%', height: 40, paddingLeft: 10, overflow: 'hidden' }}
@@ -171,14 +171,6 @@ const AddRepertorioScreen: React.FC<NavigationProps> = ({navigation}) => {
             value={search}
           />
         </View>
-        <Pressable
-          onPress={() => {
-            setModalVisible(true);
-            setEditModal(false);
-          }}
-        >
-        <Icon name="add-circle" size={30} color="#182D00" />
-        </Pressable>
       </View>
       <Button
         color="#182D00"
@@ -200,7 +192,7 @@ const AddRepertorioScreen: React.FC<NavigationProps> = ({navigation}) => {
                 <Pressable
                   onPress={() => navigation.navigate('AddSongsRepertorio', {repertorioId: item.id})}
                 >
-                  <Icon name="touch-app" size={30} color="#4D6333" />
+                  <Icon name="visibility" size={30} color="#4D6333" />
                 </Pressable>
                 <Pressable
                   onPress={() => editRepertorio(item)}
@@ -262,7 +254,7 @@ const AddRepertorioScreen: React.FC<NavigationProps> = ({navigation}) => {
           <View style={styles.modalContent}>
           <Text style={styles.lyricsText}>{repertorioToView}</Text>
           <Pressable
-            style={styles.modalButton}
+            style={styles.modalButtonRed}
             onPress={() => setViewModalVisible(false)}
           >
           <Text style={styles.modalButtonText}>Fechar</Text>
@@ -293,11 +285,11 @@ const AddRepertorioScreen: React.FC<NavigationProps> = ({navigation}) => {
               onPress={isEditModal ? saveEditedRepertorio : addRepertorio}
             >
               <Text style={styles.modalButtonText}>
-                {isEditModal ? "Salvar Edição" : "Cadastrar Repertório"}
+                Salvar
               </Text>
             </Pressable>
             <Pressable
-              style={styles.modalButton}
+              style={styles.modalButtonRed}
               onPress={() => {
                 setRepertorioToEdit(null);
                 setModalVisible(false);

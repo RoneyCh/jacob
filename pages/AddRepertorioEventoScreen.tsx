@@ -327,7 +327,7 @@ const msToMinutes = (ms:number) => {
   return (
     <View style={styles.container}>
       <View style={{display:"flex", flexDirection: 'row', alignItems: 'center'}}>
-        <View style={{ display:"flex", flexDirection:'row', width:'80%', height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, paddingLeft: 10 }}>
+      <View style={{ display:"flex", flexDirection:'row', width:'100%', height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, paddingLeft: 10, borderRadius: 40 }}>
           <Icon name="search" size={30} />
           <TextInput
             style={{ width: '100%', height: 40, paddingLeft: 10, overflow: 'hidden' }}
@@ -336,16 +336,6 @@ const msToMinutes = (ms:number) => {
             value={search}
           />
         </View>
-        {userRole == 1 ? (
-        <Pressable
-          onPress={() => {
-            setModalVisible(true);
-            setEditModal(false);
-          }}
-        >
-        <Icon name="add-circle" size={30} color="#182D00" />
-        </Pressable>
-        ) : null}
       </View>
       {userRole == 1 ? (
       <Button
@@ -434,7 +424,7 @@ const msToMinutes = (ms:number) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
           <Pressable
-            style={styles.modalButton}
+            style={styles.modalButtonRed}
             onPress={() => setViewModalVisible(false)}
           >
           <Text style={styles.modalButtonText}>Fechar</Text>
@@ -486,11 +476,11 @@ const msToMinutes = (ms:number) => {
               onPress={isEditModal ? editRepertorioInEvento : addRepertoriosEvento}
             >
               <Text style={styles.modalButtonText}>
-                {isEditModal ? "Salvar Edição" : "Adicionar repertório"}
+                Salvar
               </Text>
             </Pressable>
             <Pressable
-              style={styles.modalButton}
+              style={styles.modalButtonRed}
               onPress={() => {
                 setEventoToEdit(null);
                 setModalVisible(false);

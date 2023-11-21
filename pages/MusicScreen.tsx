@@ -5,6 +5,7 @@ import {
     NavigationScreenProp,
     NavigationState
   } from 'react-navigation';
+  import styles2 from "../assets/styles/styles";
 
 interface MusicScreenProps {
     navigation: NavigationScreenProp<NavigationState, NavigationParams>;
@@ -17,19 +18,19 @@ const MusicScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
         style={styles.button}
         onPress={() => navigation.navigate('AddArtist')}
       >
-        <Text>Artista</Text>
+        <Text style={styles2.musicMenuText}>Artista</Text>
       </Pressable>
       <Pressable
         style={styles.button}
         onPress={() => navigation.navigate('AddLetras')}
       >
-        <Text>Letras</Text>
+        <Text style={styles2.musicMenuText}>Letras</Text>
       </Pressable>
       <Pressable
         style={styles.button}
         onPress={() => navigation.navigate('AddRepertorio')}
       >
-        <Text>Repertório</Text>
+        <Text style={styles2.musicMenuText}>Repertório</Text>
       </Pressable>
     </View>
   );

@@ -39,8 +39,8 @@ const styles = StyleSheet.create({
     },
     screenName: {
       fontSize: 18,
-      fontWeight: "bold",
       flexShrink: 1,
+      fontFamily: "rubik-medium-italic",
     },
     screenGenre: {
       color: "#555",
@@ -63,14 +63,29 @@ const styles = StyleSheet.create({
     },
     modalButton: {
       backgroundColor: "#182D00", // Cor de fundo do botão
-      borderRadius: 8,
+      borderRadius: 50,
       padding: 12,
       alignItems: "center",
       marginTop: 16,
     },
+    modalButtonSq: {
+      backgroundColor: "#118233", // Cor de fundo do botão
+      borderRadius: 8,
+      padding: 12,
+      alignItems: "center",
+      marginBottom: 8,
+    },
     modalButtonText: {
       color: "white", // Cor do texto do botão
       fontSize: 16,
+      fontFamily: "rubik-regular",
+    },
+    modalButtonRed: {
+      backgroundColor: "#771010", // Cor de fundo do botão
+      borderRadius: 50,
+      padding: 12,
+      alignItems: "center",
+      marginTop: 16,
     },
     confirmDeleteContainer: {
       flex: 1,
@@ -85,6 +100,8 @@ const styles = StyleSheet.create({
     confirmDeleteText: {
       fontSize: 18,
       marginBottom: 20,
+      fontFamily: "rubik-regular",
+      fontWeight: '600'
     },
     confirmDeleteButtons: {
       flexDirection: "row",
@@ -93,7 +110,12 @@ const styles = StyleSheet.create({
     lyricsText: {
       fontSize: 18,
       marginBottom: 20,
+      fontFamily: "rubik-regular"
     },
+    musicMenuText: {
+      fontSize: 18,
+      fontFamily: "rubik-regular"
+    }
   });
 
     export default styles;

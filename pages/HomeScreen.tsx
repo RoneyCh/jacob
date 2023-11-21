@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: "rubik-medium"
   },
 });
 

@@ -296,12 +296,15 @@ async function getSpotifyData(songTitle:string, artistName = '') {
   return (
     <View style={styles.container}>
       <View style={{display:"flex", flexDirection: 'row', alignItems: 'center'}}>
-        <TextInput
-          style={{ width:'80%', height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, paddingLeft: 10 }}
-          placeholder="Pesquisar..."
-          onChangeText={handleSearch}
-          value={search}
-        />
+      <View style={{ display:"flex", flexDirection:'row', width:'100%', height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, paddingLeft: 10, borderRadius: 40 }}>
+          <Icon name="search" size={30} />
+          <TextInput
+            style={{ width: '100%', height: 40, paddingLeft: 10, overflow: 'hidden' }}
+            placeholder="Pesquisar..."
+            onChangeText={handleSearch}
+            value={search}
+          />
+        </View>
       </View>
       <Button
         color="#182D00"
@@ -394,7 +397,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
           <View style={styles.modalContent}>
           <Text style={styles.lyricsText}>{letraToView}</Text>
           <Pressable
-            style={styles.modalButton}
+            style={styles.modalButtonRed}
             onPress={() => setViewModalVisible(false)}
           >
           <Text style={styles.modalButtonText}>Fechar</Text>
@@ -461,11 +464,11 @@ async function getSpotifyData(songTitle:string, artistName = '') {
               onPress={isEditModal ? saveEditedLetra : addLetras}
             >
               <Text style={styles.modalButtonText}>
-                {isEditModal ? "Salvar Edição" : "Cadastrar Letra"}
+                Salvar
               </Text>
             </Pressable>
             <Pressable
-              style={styles.modalButton}
+              style={styles.modalButtonRed}
               onPress={() => {
                 setLetraToEdit(null);
                 setModalVisible(false);

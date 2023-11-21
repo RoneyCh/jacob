@@ -15,6 +15,8 @@ import SignUpScreen from './pages/SignUpScreen';
 import SignInScreen from './pages/SignInScreen';
 import {decode, encode} from 'base-64';
 import AuthProvider from './context/AuthContext';
+import * as Font from 'expo-font';
+
 
 if (!global.btoa) {  global.btoa = encode }
 
@@ -26,9 +28,23 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    const loadFonts = async () => {
+      await Font.loadAsync({
+        'rubik-regular': require('./assets/fonts/Rubik-Regular.ttf'),
+        'rubik-medium': require('./assets/fonts/Rubik-Medium.ttf'),
+        'rubik-bold': require('./assets/fonts/Rubik-Bold.ttf'),
+        'rubik-black': require('./assets/fonts/Rubik-Black.ttf'),
+        'rubik-light': require('./assets/fonts/Rubik-Light.ttf'),
+        'rubik-light-italic': require('./assets/fonts/Rubik-LightItalic.ttf'),
+        'rubik-italic': require('./assets/fonts/Rubik-Italic.ttf'),
+        'rubik-medium-italic': require('./assets/fonts/Rubik-MediumItalic.ttf'),
+      });
+    }
     setTimeout(() => {
       setIsLoading(false);
     }, 3000); 
+
+    loadFonts();
   }, []);
 
   return (

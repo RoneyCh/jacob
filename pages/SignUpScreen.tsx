@@ -2,7 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import { ImageBackground, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ImageBackground, Pressable, StyleSheet, Text, TextInput, View, Image } from "react-native";
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import {
@@ -104,13 +104,15 @@ const SignUpScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
         }
     }
 
-    const imageLogin = require("../assets/Jacob_back_login.png");
+    const imageLogin = require("../assets/backgroundLogin.png");
+    const logoImage = require("../assets/logoJacob.png");
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container,]}>
             <ImageBackground source={imageLogin} resizeMode="cover" style={styles.container}>
+            <Image source={logoImage} resizeMode="stretch" style={styles.logoImage} ></Image>
             <TextInput
-                style={styles.input}
+                style={[styles.input, { marginTop: 100}]}
                 placeholder="Nome"
                 value={nome}
                 onChangeText={(text) => setNome(text)}
@@ -128,15 +130,15 @@ const SignUpScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
                 value={password}
                 onChangeText={(text) => setPassword(text)}
             />
-            <Text style={{color: '#FFF', fontSize: 30, marginTop:10}}>O que você é?</Text>
+            <Text style={{color: '#FFF', fontSize: 30, marginTop:10, fontFamily: "rubik-regular"}}>O que você é?</Text>
             <RadioButton.Group onValueChange={newValue => setRole(parseInt(newValue))} value={role.toString()}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 16 }}>
                     <RadioButton uncheckedColor="white" value="1" color="white"/>
-                    <Text style={{color: '#FFF', fontSize: 20}}>Organizador</Text>
+                    <Text style={{color: '#FFF', fontSize: 20, fontFamily: "rubik-regular"}}>Organizador</Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 16 }}>
                     <RadioButton uncheckedColor="white" value="0" color="white" />
-                    <Text style={{color: '#FFF', fontSize: 20}}>Público</Text>
+                    <Text style={{color: '#FFF', fontSize: 20, fontFamily: "rubik-regular"}}>Público</Text>
                 </View>
             </RadioButton.Group>
             <Pressable
@@ -148,7 +150,7 @@ const SignUpScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
             <Pressable
                 onPress={() => navigation.navigate('SignIn')}
             >
-                <Text style={styles.loginButtonText}>Voltar para login</Text>
+                <Text style={styles.createAccountText}>Voltar para login</Text>
             </Pressable>
             <StatusBar style="auto" />
         </ImageBackground>
@@ -165,6 +167,13 @@ const styles = StyleSheet.create({
         width: "100%",
         height: "100%",
     },
+    logoImage: {
+        width: 200,
+        height: 100,
+        position: 'absolute',
+        top: 50,
+        resizeMode: 'stretch',
+    },
     input: {
         backgroundColor: "#FFF",
         width: "90%",
@@ -175,8 +184,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     loginButton: {
-        backgroundColor: "#89589B",
-        opacity: 0.8,
+        backgroundColor: "#bdff6d",
         width: "90%",
         height: 45,
         alignItems: "center",
@@ -185,8 +193,14 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     loginButtonText: {
-        color: "#FFF",
+        color: "#000",
         fontSize: 18,
+        fontFamily: "rubik-regular",
+    },
+    createAccountText: {
+        color: "#fff",
+        fontSize: 18,
+        fontFamily: "rubik-regular",
     },
 });
 

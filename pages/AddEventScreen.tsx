@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Pressable,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import { db } from "../firebase";
 import {
@@ -189,7 +190,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
   return (
     <View style={styles.container}>
       <View style={{display:"flex", flexDirection: 'row', alignItems: 'center'}}>
-        <View style={{ display:"flex", flexDirection:'row', width:'80%', height: 40, borderColor: 'gray', borderWidth: 1, margin: 10, paddingLeft: 10 }}>
+      <View style={{ display:"flex", flexDirection:'row', width:'100%', height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, paddingLeft: 10, borderRadius: 40 }}>
           <Icon name="search" size={30} />
           <TextInput
             style={{ width: '100%', height: 40, paddingLeft: 10, overflow: 'hidden' }}
@@ -198,17 +199,6 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
             value={search}
           />
         </View>
-        {userRole == 1 ? (
-        <Pressable
-          onPress={() => {
-            setModalVisible(true);
-            setEditModal(false);
-            setDataEvento(new Date());
-          }}
-        >
-        <Icon name="add-circle" size={30} color="#182D00" />
-        </Pressable>
-        ) : null}
       </View>
       {userRole == 1 ? (
       <Button
@@ -233,7 +223,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
                 <Pressable
                   onPress={() => navigation.navigate('AddRepertorioEvento', {eventoId: item.id})}
                 >
-                  <Icon name="touch-app" size={30} color="#4D6333" />
+                  <Icon name="visibility" size={30} color="#4D6333" />
                 </Pressable>
                 {userRole == 1 ? (
                 <><Pressable
@@ -298,7 +288,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
           <View style={styles.modalContent}>
           <Text style={styles.lyricsText}>{eventoToView}</Text>
           <Pressable
-            style={styles.modalButton}
+            style={styles.modalButtonRed}
             onPress={() => setViewModalVisible(false)}
           >
           <Text style={styles.modalButtonText}>Fechar</Text>
@@ -334,9 +324,13 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
               onChangeText={(text) => setEndereco(text)}
             />
             <Text>Data do Evento:</Text>
-            <Button onPress={showDatepicker} title="Escolha a data" />
+            <TouchableOpacity style={styles.modalButtonSq} onPress={showDatepicker}>
+              <Text style={styles.modalButtonText}>Escolha a data</Text>
+            </TouchableOpacity>
             <Text>Hora do Evento:</Text>
-            <Button onPress={showTimepicker} title="Escolha a hora" />
+            <TouchableOpacity style={styles.modalButtonSq} onPress={showTimepicker}>
+              <Text style={styles.modalButtonText}>Escolha a hora</Text>
+            </TouchableOpacity>
             <Text style={{ 
               marginTop: 20,
               marginBottom: 10,
@@ -351,11 +345,11 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
               onPress={isEditModal ? saveEditedEvento : addEvento}
             >
               <Text style={styles.modalButtonText}>
-                {isEditModal ? "Salvar Edição" : "Cadastrar Evento"}
+                Salvar
               </Text>
             </Pressable>
             <Pressable
-              style={styles.modalButton}
+              style={styles.modalButtonRed}
               onPress={() => {
                 setEventoToEdit(null);
                 setModalVisible(false);

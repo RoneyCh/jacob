@@ -2,7 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 import { useContext, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View, ImageBackground } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View, ImageBackground, Image } from "react-native";
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import {
@@ -72,11 +72,12 @@ const SignInScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
         }
     };
 
-    const imageLogin = require("../assets/Jacob_back_login.png");
-
+    const imageLogin = require("../assets/backgroundLogin.png");
+    const logoImage = require("../assets/logoJacob.png");
     return (
         <View style={styles.container}>
             <ImageBackground source={imageLogin} resizeMode="cover" style={styles.container}>
+            <Image source={logoImage} resizeMode="stretch" style={styles.logoImage} ></Image>
             <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -99,7 +100,7 @@ const SignInScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
             <Pressable
                 onPress={() => navigation.navigate('SignUp')}
             >
-                <Text style={[styles.loginButtonText]}>Criar Conta</Text>
+                <Text style={[styles.createAccountText]}>Criar Conta</Text>
             </Pressable>
             <StatusBar style="auto" />
         </ImageBackground>
@@ -116,6 +117,13 @@ const styles = StyleSheet.create({
         width: "100%",
         height: "100%",
     },
+    logoImage: {
+        width: 200,
+        height: 100,
+        position: 'absolute',
+        top: 100,
+        resizeMode: 'stretch',
+    },
     image: {
         flex: 1,
         justifyContent: 'center',
@@ -130,8 +138,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     loginButton: {
-        backgroundColor: "#89589B",
-        opacity: 0.8,
+        backgroundColor: "#bdff6d",
         width: "90%",
         height: 45,
         alignItems: "center",
@@ -140,8 +147,14 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     loginButtonText: {
-        color: "#FFF",
+        color: "#000",
         fontSize: 18,
+        fontFamily: "rubik-regular",
+    },
+    createAccountText: {
+        color: "#fff",
+        fontSize: 18,
+        fontFamily: "rubik-regular",
     },
 });
 
