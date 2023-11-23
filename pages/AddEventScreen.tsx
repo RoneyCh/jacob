@@ -244,7 +244,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
             </View>
             <View style={{display:"flex", justifyContent: "space-between", flexDirection: "row", marginTop: 20}}>
             <Text style={styles.screenGenre}>
-              {new Date((item.data_evento.nanoseconds / 1000000000 + item.data_evento.seconds) * 1000).toLocaleString()}
+              {new Date((item.data_evento.nanoseconds / 1000000000 + item.data_evento.seconds) * 1000).toLocaleString().slice(0, -3)}
             </Text>
             </View>
           </View>
@@ -339,7 +339,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
               borderColor: '#000',
               padding: 10,
               borderRadius: 10,
-             }}>{ isEditModal ? 'Evento marcado: ' + dataEvento.toLocaleString() : ''}</Text>
+             }}>{ isEditModal ? 'Evento marcado: ' + dataEvento.toLocaleString().slice(0, -3) : ''}</Text>
             <Pressable
               style={styles.modalButton}
               onPress={isEditModal ? saveEditedEvento : addEvento}

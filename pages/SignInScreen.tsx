@@ -43,7 +43,7 @@ const SignInScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
     const authLogin = auth;
 
     const usersCollection = collection(db, 'users');
-
+    console.log(authenticated);
     useEffect(() => {     
         if(authenticated) {
             navigation.navigate('Home');

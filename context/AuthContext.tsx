@@ -4,6 +4,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 
 type AuthContextType = {  
   userRole: number;
+  userName: string;
   updateUserRole: (email: string) => Promise<void>;
   authenticated: boolean;
 }
@@ -17,6 +18,7 @@ export const AuthContext = createContext({} as AuthContextType);
 function AuthProvider({ children }: AuthProviderPros) {
   const [userRole, setUserRole] = useState<number>(0);
   const [authenticated, setAuthenticated] = useState<boolean>(false);
+  const [userName, setUserName] = useState<string>('');
 
   const updateUserRole = async (email: string) => {
     const usersCollection = collection(db, 'users');
@@ -25,12 +27,13 @@ function AuthProvider({ children }: AuthProviderPros) {
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
       setUserRole(doc.data().role);
+      setUserName(doc.data().nome);
     });
     setAuthenticated(true);
   };
 
   return (
-    <AuthContext.Provider value={{ userRole, updateUserRole, authenticated }}>
+    <AuthContext.Provider value={{ userRole, userName, updateUserRole, authenticated }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, StatusBar, FlatList, TextInput, TouchableOpacity } from 'react-native';
 import { NavigationParams, NavigationScreenProp, NavigationState } from 'react-navigation';
 import { AuthContext } from '../context/AuthContext';
+import { db } from '../firebase';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import styles2 from "../assets/styles/styles";
+import Modal from "react-native-modal";
+import { ScrollView } from 'react-native';
 
 interface navigationProps {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
@@ -11,8 +16,22 @@ interface category {
   title: string;
 }
 
+interface EventoProps {
+  id: string;
+  nome:string;
+  data_evento: {seconds: number, nanoseconds: number};
+  endereco: string;
+  data_insert: string;
+}
+
+
 const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
-  const { userRole } = React.useContext(AuthContext);
+  const { userRole, userName } = React.useContext(AuthContext);
+  const [eventosList, setEventosList] = useState<EventoProps[]>([]);
+  const [isModalVisible, setModalVisible] = useState(false); // Estado para controlar a visibilidade da modal
+  const [dataEvento, setDataEvento] = useState(new Date());
+  const [eventoDetails, setEventoDetails] = useState<EventoProps | null>(null);
+
   let categories: category[] = [
     { id: 1, title: 'Música' },
     { id: 2, title: 'Eventos' }
@@ -24,17 +43,53 @@ const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
     ];
   }
   
+  // Referência para a coleção de eventos no Firestore
+  const eventoCollection = collection(db, "evento");
+
+  const loadEvento = async () => {
+    try {
+      const q = query(eventoCollection, orderBy("data_insert", "desc"));
+      const unsub = onSnapshot(q, (querySnapshot) => {
+        let eventoList: any = [];
+        querySnapshot.forEach((doc) => {
+          eventoList.push({
+            id: doc.id,
+            ...(doc.data() as {
+              nome: string;
+              data_evento: string;
+              endereco: string;
+            }),
+          });
+        });
+        setEventosList(eventoList);
+      });
+      return () => unsub();
+    } catch (error) {
+      console.error("Erro ao carregar artistas:", error);
+    }
+  };
 
   const [statusBarHeight, setStatusBarHeight] = useState<number>(0);
 
 
   useEffect(() => {
+    loadEvento();
     const statusHeight = StatusBar.currentHeight || 0;
     setStatusBarHeight(statusHeight);
   }, []);
 
+  const eventDetails = (evento: EventoProps) => {
+    // Preenche a modal com os dados do evento selecionado
+    let data_evento = evento.data_evento as any; 
+    setDataEvento(new Date((data_evento.nanoseconds / 1000000000 + data_evento.seconds) * 1000));
+    setEventoDetails(evento);
+    setModalVisible(true);
+  };
+
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      <Text style={{ fontSize: 24, fontFamily: "rubik-bold", marginTop: 40 }}>Bem vindo, {userName}!</Text>
       {categories.map((category) => (
         <SafeAreaView
           key={category.id}
@@ -48,6 +103,66 @@ const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
           </Pressable>
         </SafeAreaView>
       ))}
+      <Text style={{ fontSize: 24, fontFamily: "rubik-bold", marginTop: 40 }}>Eventos</Text>
+      {userRole != 2 ? ( 
+        <FlatList
+        horizontal={true}
+        data={eventosList}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => eventDetails(item)}
+          >
+          <View style={[styles2.screensCard, {marginLeft:10, justifyContent:'center', alignSelf:'center'}]}>
+          <View style={styles2.screenItem}>
+            <View style={styles2.cardHeader}>
+              <Text style={styles2.screenName}>{item.nome}</Text> 
+            </View>
+          </View>
+        </View>
+        </Pressable>
+        )}
+      />
+      ) : null}
+      <Modal isVisible={isModalVisible} animationIn="slideInUp" animationOut="slideOutDown">
+  <ScrollView contentContainerStyle={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>Detalhes do evento</Text>
+      <View style={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+        <Text style={styles.modalEventDetails}>Título do Evento</Text>
+        <Text style={{fontSize: 18, marginBottom: 10, fontFamily: 'rubik-regular'}}>{eventoDetails?.nome}</Text>
+      </View>
+      <View style={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+        <Text style={styles.modalEventDetails}>Endereço</Text>   
+        <Text style={{fontSize: 18, marginBottom: 10, fontFamily: 'rubik-regular'}}>{eventoDetails?.endereco}</Text>
+      </View>
+      <View style={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+        <Text style={styles.modalEventDetails}>Data</Text>
+        <Text style={{fontSize: 18, fontFamily: 'rubik-regular'}}>{dataEvento.toLocaleString().slice(0, -3)}</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.linkButton}
+        onPress={() => {
+          navigation.navigate('AddRepertorioEvento', {eventoId: eventoDetails?.id});
+          setEventoDetails(null);
+          setModalVisible(false);
+        }}
+      >
+        <Text style={styles.linkText}>Repertório do evento</Text>
+      </TouchableOpacity>
+      <Pressable
+        style={styles.closeButton}
+        onPress={() => {
+          setEventoDetails(null);
+          setModalVisible(false);
+        }}
+      >
+        <Text style={styles.closeButtonText}>Fechar</Text>
+      </Pressable>
+    </View>
+  </ScrollView>
+</Modal>
+
     </View>
   );
 };
@@ -67,6 +182,55 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 18,
     fontFamily: "rubik-medium"
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#E6F5C7',
+    padding: 20,
+    height: '60%',
+    width: '90%',
+    borderRadius: 10,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    marginBottom: 20,
+    fontFamily: "rubik-medium",
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+    textShadowRadius: 0.5,
+    textShadowColor: '#118233',
+    textShadowOffset: {width: 1, height: 1},
+  },
+  modalEventDetails: {
+    fontSize: 18,
+    fontFamily: "rubik-medium"
+  },
+  linkButton: {
+    marginTop: 'auto',
+    padding: 10,
+    backgroundColor: '#118233',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  linkText: {
+    color: 'white',
+    fontFamily: "rubik-medium",
+  },
+  closeButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#e74c3c',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontFamily: "rubik-medium",
   },
 });
 
