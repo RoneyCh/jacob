@@ -26,6 +26,16 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     
     },
+    screensCardHome: {
+      backgroundColor: "#CAFF8A",
+      borderRadius: 8,
+      height: 120,
+      marginVertical: 8,
+      borderWidth: 1,
+      borderColor: "#ccc",
+      marginBottom: 8,
+  
+  },
     screenItem: {
       width: "100%"
     },

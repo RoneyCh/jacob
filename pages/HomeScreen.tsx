@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, SafeAreaView, StatusBar, FlatList, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, StatusBar, FlatList, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
 import { NavigationParams, NavigationScreenProp, NavigationState } from 'react-navigation';
 import { AuthContext } from '../context/AuthContext';
 import { db } from '../firebase';
@@ -89,36 +89,44 @@ const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Text style={{ fontSize: 24, fontFamily: "rubik-bold", marginTop: 40 }}>Bem vindo, {userName}!</Text>
+      <View style={[styles.welcomeContainer, {marginTop: statusBarHeight}]}>
+      <ImageBackground source={require('../assets/backgroundLogin.png')}  style={{ flex: 1, borderRadius: 8, overflow: 'hidden' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={styles.welcomeText}>Bem-vindo, {userName}!</Text>
+      </View>
+      </ImageBackground>
+    </View>
       {categories.map((category) => (
         <SafeAreaView
           key={category.id}
           style={[{ marginTop: statusBarHeight }]}
         >
+          {userRole == 0 ? (<Text style={{ fontSize: 24, fontFamily: "rubik-bold" }}>Ver todos os eventos</Text>) : null}
           <Pressable
             style={styles.categoryCard}
-            onPress={() => navigation.navigate(category.title)}
+            onPress={() => navigation.navigate(category.title == 'Eventos' ? 'AddEventos' : category.title)}
           >
             <Text style={styles.categoryTitle}>{category.title}</Text>
           </Pressable>
         </SafeAreaView>
       ))}
-      <Text style={{ fontSize: 24, fontFamily: "rubik-bold", marginTop: 40 }}>Eventos</Text>
+    <Text style={{ fontSize: 24, fontFamily: "rubik-bold", marginTop: 40 }}>Próximos eventos</Text>
       {userRole != 2 ? ( 
         <FlatList
-        horizontal={true}
         data={eventosList}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <Pressable
             onPress={() => eventDetails(item)}
           >
-          <View style={[styles2.screensCard, {marginLeft:10, justifyContent:'center', alignSelf:'center'}]}>
-          <View style={styles2.screenItem}>
+          <View style={[styles2.screensCardHome, {width:'100%', justifyContent:'center', alignSelf:'center'}]}>
+            <ImageBackground source={require('../assets/Jacob_back_login2.png')}  style={{ flex: 1, borderRadius: 8, overflow: 'hidden' }}>
+          <View style={[styles2.screenItem, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
             <View style={styles2.cardHeader}>
-              <Text style={styles2.screenName}>{item.nome}</Text> 
+              <Text style={[styles2.screenName, {color:'white', fontSize: 25, fontFamily:'rubik-medium'}]}>{item.nome}</Text> 
             </View>
           </View>
+          </ImageBackground>
         </View>
         </Pressable>
         )}
@@ -231,6 +239,16 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: 'white',
     fontFamily: "rubik-medium",
+  },
+  welcomeContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontFamily: 'rubik-bold',
+    textAlign: 'center',
+    color: '#fff',
   },
 });
 

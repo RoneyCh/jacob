@@ -86,10 +86,10 @@ const App: React.FC = () => {
               <Stack.Screen name="AddArtist" component={AddArtistScreen} options={{headerTitle: 'Artista'}}/>
               <Stack.Screen name="AddLetras" component={AddLetrasScreen} options={{headerTitle: 'Letras'}}/>
               <Stack.Screen name="AddRepertorio" component={AddRepertorioScreen} options={{headerTitle: 'Repertorio'}}/>
-              <Stack.Screen name="AddSongsRepertorio" component={AddSongsRepertorioScreen} options={{headerTitle: 'Adicionar Músicas'}} />
+              <Stack.Screen name="AddSongsRepertorio" component={AddSongsRepertorioScreen} options={{headerTitle: 'Músicas'}} />
               <Stack.Screen name="Eventos" component={EventScreen} />
-              <Stack.Screen name="AddEventos" component={AddEventScreen} options={{headerTitle: 'Adicionar Evento'}}/>
-              <Stack.Screen name="AddRepertorioEvento" component={AddRepertorioEventoScreen} options={{headerTitle: 'Adicionar Setlist'}} />
+              <Stack.Screen name="AddEventos" component={AddEventScreen} options={{headerTitle: 'Eventos'}}/>
+              <Stack.Screen name="AddRepertorioEvento" component={AddRepertorioEventoScreen} options={{headerTitle: 'Setlists'}} />
             </>
           )}
         </Stack.Navigator>
