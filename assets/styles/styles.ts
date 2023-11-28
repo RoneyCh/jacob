@@ -125,6 +125,15 @@ const styles = StyleSheet.create({
     musicMenuText: {
       fontSize: 18,
       fontFamily: "rubik-regular"
+    },
+    fab: {
+      position: 'absolute',
+      margin: 16,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "#118233",
+      borderRadius: 50,
+      padding: 12
     }
   });
 

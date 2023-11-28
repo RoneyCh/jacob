@@ -8,6 +8,8 @@ import {
   StyleSheet,
   Pressable,
   ScrollView,
+  Touchable,
+  TouchableOpacity,
 } from "react-native";
 import { db } from "../firebase";
 import {
@@ -69,6 +71,14 @@ type RouteProps = {
   repertorioId: string;
 }
 
+interface sugestaoProps {
+  id: string;
+  musica: string;
+  artista: string;
+  idRepertorio: string;
+  data_insert: string;
+}
+
 const AddRepertorioScreen = () => {
   const { userRole } = useContext(AuthContext);
 
@@ -93,6 +103,10 @@ const AddRepertorioScreen = () => {
   const [search, setSearch] = useState('');
   const [repertoriosList, setRepertoriosList] = useState<repertorioProps[]>([]);
   const [ordem, setOrdem] = useState<number>(0);
+  const [musicaSugestaoNome, setMusicaSugestaoNome] = useState<string>('');
+  const [artistaSugestaoNome, setArtistaSugestaoNome] = useState<string>('');
+  const [modalSugeridasVisible, setModalSugeridasVisible] = useState(false);
+  const [musicaSugerida, setMusicaSugerida] = useState<sugestaoProps[]>([]);
 
 
   // Referência para a coleção de letras no Firestore
@@ -191,6 +205,7 @@ const AddRepertorioScreen = () => {
   useEffect(() => {
     loadRepertorio();
     loadArtists();
+    loadSugeridas();
     
   }, []);
 
@@ -218,6 +233,41 @@ const AddRepertorioScreen = () => {
 
 };
 
+const loadSugeridas = async () => {
+  try {
+    const sugestaoCollection = collection(db, "sugestao");
+    const q = query(sugestaoCollection, orderBy("data_insert", "asc"));
+    const unsub = onSnapshot(q, (querySnapshot) => {
+      let sugeridasList: any = [];
+      querySnapshot.forEach((doc) => {
+        sugeridasList.push({
+          id: doc.id,
+          ...(doc.data() as {
+            musica: string;
+            artista: string;
+            idRepertorio: string;
+            data_insert: string;
+          }),
+        });
+      });''
+   
+      let musicasSugeridas = sugeridasList.filter((item: { idRepertorio: any; }) => {
+        if(idRepertorio) {
+          if(idRepertorio == item.idRepertorio) {
+            return true;
+          }
+          return false;
+        }
+        return false;
+      });
+
+      setMusicaSugerida(musicasSugeridas);
+    });
+    return () => unsub();
+  } catch (error) {
+    console.error("Erro ao carregar artistas:", error);
+  }
+};
 
   const artistsCollection = collection(db, "artists");
 
@@ -278,6 +328,25 @@ const AddRepertorioScreen = () => {
         setRepertorioToEdit(null);
         setModalVisible(false);
         loadRepertorio();
+    } catch (error) {
+      console.error("Erro ao adicionar repertorio:", error);
+    }
+  };
+
+  const addSongsSugestao = async () => {
+    try {
+      const sugestaoCollection = collection(db, "sugestao");
+      await addDoc(sugestaoCollection, {
+        musica: musicaSugestaoNome,
+        artista: artistaSugestaoNome,
+        idRepertorio: idRepertorio,
+        data_insert: new Date(),
+      });
+
+      setMusicaSugestaoNome('');
+      setArtistaSugestaoNome('');
+      setModalVisible(false);
+        
     } catch (error) {
       console.error("Erro ao adicionar repertorio:", error);
     }
@@ -395,16 +464,14 @@ const AddRepertorioScreen = () => {
           />
         </View>
       </View>
-      {userRole == 1 && (
-      <Button
-        color="#182D00"
-        title="Adicionar música"
+  
+      <TouchableOpacity
+        style={{backgroundColor: "#182D00", padding: 10, borderRadius: 50,  justifyContent: "center", alignItems: "center"}}
         onPress={() => {
-          setModalVisible(true);
+          userRole == 1 ? setModalVisible(true) : setModalSugeridasVisible(true);
           setEditModal(false);
         }}
-      />
-      )}
+      ><Text style={{color:'white', fontFamily:'rubik-bold', fontSize:16}}>{userRole == 1 ? "Adicionar música" : "Músicas Sugeridas"}</Text></TouchableOpacity>
       <FlatList
         data={filteredLetrasList}
         keyExtractor={(item) => item.id}
@@ -498,50 +565,113 @@ const AddRepertorioScreen = () => {
         </View>
         </ScrollView>
       </Modal>
+
+      <Modal isVisible={modalSugeridasVisible}>
+        {/*<ScrollView>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+          <Text style={styles.lyricsText}>oi</Text>
+          <Pressable
+            style={styles.modalButtonRed}
+            onPress={() => setModalSugeridasVisible(false)}
+          >
+          <Text style={styles.modalButtonText}>Fechar</Text>
+          </Pressable>
+          </View>
+        </View>
+              </ScrollView>*/}
+        
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+            <Text style={[styles.screenName, { marginBottom: 20, fontFamily: "rubik-bold", fontSize: 20 }]}>Músicas Sugeridas</Text>
+            <FlatList 
+        data={musicaSugerida}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => ( 
+            <><Text style={[styles.screenName, { marginBottom: 20, fontFamily: "rubik-medium", color: '#4D6333', textAlign: 'center',
+            textDecorationLine: 'underline' }]}>{item.musica} - {item.artista}</Text></>
+          )}
+          />
+          {userRole == 0 && (
+          <Pressable
+              style={styles.modalButton}
+              onPress={() => {
+                setRepertorioToEdit(null);
+                setModalSugeridasVisible(false);
+                setModalVisible(true);
+                setEditModal(false);
+              }}
+            >
+              <Text style={styles.modalButtonText}>Sugerir Música</Text>
+          </Pressable>
+          )}
+          <Pressable
+              style={styles.modalButtonRed}
+              onPress={() => {
+                setRepertorioToEdit(null);
+                setModalSugeridasVisible(false);
+              }}
+            >
+              <Text style={styles.modalButtonText}>Fechar</Text>
+          </Pressable>
+
+          </View>
+          </View>
+      </Modal>
                   
       <Modal isVisible={isModalVisible}>
         <ScrollView>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {isEditModal ? "Editar música" : "Adicionar música"}
+              {isEditModal ? "Editar música" : userRole == 1 ? "Adicionar música" : "Sugerir música"}
             </Text>
-            <Text>Música:</Text>
-            <SelectDropdown
-              searchInputTxtColor="#000"
-              dropdownStyle={{backgroundColor: '#CFF5C7'}}
-              buttonStyle={{backgroundColor: '#CFF5C7', borderColor: '#000', borderWidth: 1, borderRadius: 5, padding: 10, width: '100%'}}
-              data={letrasList.map((item) => ({
-                value: item.id, 
-                label: item.musica,
-                genero: item?.genero,
-                artistId: item?.artistaId,
-                duracao: item.duracao
-              }))}
-              onSelect={(selectedValue, index) => {
-                setRepertorioData(selectedValue);
-              }}
-              defaultButtonText={
-                repertorioToEdit?.id ? repertorioToEdit?.musica : "Selecione uma música"
-              }
-              buttonTextAfterSelection={(selectedItem, index) => {
-                return selectedItem.label + ' - ' + artists.find((artist) => artist.id === selectedItem.artistId)?.nome;
-              }}
-              rowTextForSelection={(item, index) => item.label + ' - ' + artists.find((artist) => artist.id === item.artistId)?.nome}
-            />
-            <Text>Ordem:</Text>
-            <TextInput
-              style={styles.input}
-              multiline={true} 
-              placeholder="Ordem do repertório"
-              keyboardType='numeric'              
-              defaultValue={isEditModal ? ordem.toString() : ''}
-              onChangeText={(text) => setOrdem(Number(text))}
-            />
-
+            {userRole == 1 ? (
+            <><Text>Música:</Text><SelectDropdown
+                  searchInputTxtColor="#000"
+                  dropdownStyle={{ backgroundColor: '#CFF5C7' }}
+                  buttonStyle={{ backgroundColor: '#CFF5C7', borderColor: '#000', borderWidth: 1, borderRadius: 5, padding: 10, width: '100%' }}
+                  data={letrasList.map((item) => ({
+                    value: item.id,
+                    label: item.musica,
+                    genero: item?.genero,
+                    artistId: item?.artistaId,
+                    duracao: item.duracao
+                  }))}
+                  onSelect={(selectedValue, index) => {
+                    setRepertorioData(selectedValue);
+                  } }
+                  defaultButtonText={repertorioToEdit?.id ? repertorioToEdit?.musica : "Selecione uma música"}
+                  buttonTextAfterSelection={(selectedItem, index) => {
+                    return selectedItem.label + ' - ' + artists.find((artist) => artist.id === selectedItem.artistId)?.nome;
+                  } }
+                  rowTextForSelection={(item, index) => item.label + ' - ' + artists.find((artist) => artist.id === item.artistId)?.nome} /><Text>Ordem:</Text><TextInput
+                    style={styles.input}
+                    multiline={true}
+                    placeholder="Ordem do repertório"
+                    keyboardType='numeric'
+                    defaultValue={isEditModal ? ordem.toString() : ''}
+                    onChangeText={(text) => setOrdem(Number(text))} /></>
+            ) : (
+              <>
+              <Text>Música</Text><TextInput
+                    style={styles.input}
+                    multiline={true}
+                    placeholder="Nome da música"
+                    onChangeText={(text) => setMusicaSugestaoNome(text)}
+              />
+              <Text>Artista</Text>
+              <TextInput
+                    style={styles.input}
+                    multiline={true}
+                    placeholder="Nome do artista"
+                    onChangeText={(text) => setArtistaSugestaoNome(text)}
+              />
+              </>
+            )}
             <Pressable
               style={styles.modalButton}
-              onPress={isEditModal ? editSongInRepertorio : addSongsRepertorio}
+              onPress={isEditModal ? editSongInRepertorio : userRole == 1 ? addSongsRepertorio : addSongsSugestao}
             >
               <Text style={styles.modalButtonText}>
                 Salvar
@@ -560,6 +690,17 @@ const AddRepertorioScreen = () => {
         </View>
         </ScrollView>
       </Modal>
+
+      <View style={styles.fab}>
+        <Pressable
+          onPress={() => {
+            userRole == 0 ? setModalVisible(true) : setModalSugeridasVisible(true);
+            setEditModal(false);
+          }}
+        >
+          <Icon name={userRole == 0 ? "add" : "my-library-music"} size={30} color="#FFF" />
+        </Pressable>
+      </View>
     </View>
   );
 };
