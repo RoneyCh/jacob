@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
       justifyContent: "space-between",
     },
     lyricsText: {
-      fontSize: 18,
+      fontSize: 24,
       marginBottom: 20,
       fontFamily: "rubik-regular"
     },

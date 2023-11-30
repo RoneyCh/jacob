@@ -73,6 +73,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
       mode: currentMode,
       is24Hour: true,
     });
+
   };
 
   const showDatepicker = () => {
@@ -174,7 +175,7 @@ const AddEventoScreen: React.FC<NavigationProps> = ({navigation}) => {
           endereco: endereco || eventoToEdit.endereco,
           data_evento: dataEvento || eventoToEdit.data_evento
         };
-        console.log(eventoData);
+
         await setDoc(eventoRef, eventoData, { merge: true }); // Atualiza os campos nome e genero, mantendo os outros campos intactos
         setEventoToEdit(null);
         setModalVisible(false);

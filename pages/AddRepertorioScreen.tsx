@@ -142,7 +142,7 @@ const AddRepertorioScreen: React.FC<NavigationProps> = ({navigation}) => {
         const repertorioData: DocumentData = {
           nome: repertorioNome || repertorioToEdit.nome,
         };
-        console.log(repertorioData);
+
         await setDoc(repertorioRef, repertorioData, { merge: true }); // Atualiza os campos nome e genero, mantendo os outros campos intactos
         setRepertorioToEdit(null);
         setModalVisible(false);

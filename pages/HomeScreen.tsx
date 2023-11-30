@@ -7,6 +7,7 @@ import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import styles2 from "../assets/styles/styles";
 import Modal from "react-native-modal";
 import { ScrollView } from 'react-native';
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface navigationProps {
   navigation: NavigationScreenProp<NavigationState, NavigationParams>;
@@ -14,6 +15,7 @@ interface navigationProps {
 interface category {
   id: number;
   title: string;
+  icon: string;
 }
 
 interface EventoProps {
@@ -33,13 +35,13 @@ const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
   const [eventoDetails, setEventoDetails] = useState<EventoProps | null>(null);
 
   let categories: category[] = [
-    { id: 1, title: 'Música' },
-    { id: 2, title: 'Eventos' }
+    { id: 1, title: 'Música', icon: 'music-note' },
+    { id: 2, title: 'Eventos', icon: 'event' }
   ];
   
   if(userRole == 0) {
     categories = [
-      { id: 2, title: 'Eventos' },
+      { id: 2, title: 'Eventos', icon: 'event' },
     ];
   }
   
@@ -103,10 +105,11 @@ const HomeScreen: React.FC<navigationProps> = ({ navigation }) => {
         >
           {userRole == 0 ? (<Text style={{ fontSize: 24, fontFamily: "rubik-bold" }}>Ver todos os eventos</Text>) : null}
           <Pressable
-            style={styles.categoryCard}
+            style={[styles.categoryCard, {display:'flex', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}]}
             onPress={() => navigation.navigate(category.title == 'Eventos' ? 'AddEventos' : category.title)}
           >
             <Text style={styles.categoryTitle}>{category.title}</Text>
+            <Icon name={category.icon} size={30} color="#000" />
           </Pressable>
         </SafeAreaView>
       ))}
@@ -210,9 +213,6 @@ const styles = StyleSheet.create({
     fontFamily: "rubik-medium",
     textAlign: 'center',
     textDecorationLine: 'underline',
-    textShadowRadius: 0.5,
-    textShadowColor: '#118233',
-    textShadowOffset: {width: 1, height: 1},
   },
   modalEventDetails: {
     fontSize: 18,

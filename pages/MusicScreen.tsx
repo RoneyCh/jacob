@@ -6,6 +6,8 @@ import {
     NavigationState
   } from 'react-navigation';
   import styles2 from "../assets/styles/styles";
+  import Icon from "react-native-vector-icons/MaterialIcons";
+
 
 interface MusicScreenProps {
     navigation: NavigationScreenProp<NavigationState, NavigationParams>;
@@ -19,18 +21,21 @@ const MusicScreen: React.FC<MusicScreenProps> = ({ navigation }) => {
         onPress={() => navigation.navigate('AddArtist')}
       >
         <Text style={styles2.musicMenuText}>Artista</Text>
+        <Icon name="person" size={30} color="#118233" />
       </Pressable>
       <Pressable
         style={styles.button}
         onPress={() => navigation.navigate('AddLetras')}
       >
         <Text style={styles2.musicMenuText}>Letras</Text>
+        <Icon name="music-note" size={30} color="#118233" />
       </Pressable>
       <Pressable
         style={styles.button}
         onPress={() => navigation.navigate('AddRepertorio')}
       >
         <Text style={styles2.musicMenuText}>Repertório</Text>
+        <Icon name="queue-music" size={30} color="#118233" />
       </Pressable>
     </View>
   );

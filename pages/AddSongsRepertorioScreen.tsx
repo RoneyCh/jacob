@@ -567,20 +567,6 @@ const loadSugeridas = async () => {
       </Modal>
 
       <Modal isVisible={modalSugeridasVisible}>
-        {/*<ScrollView>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-          <Text style={styles.lyricsText}>oi</Text>
-          <Pressable
-            style={styles.modalButtonRed}
-            onPress={() => setModalSugeridasVisible(false)}
-          >
-          <Text style={styles.modalButtonText}>Fechar</Text>
-          </Pressable>
-          </View>
-        </View>
-              </ScrollView>*/}
-        
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
             <Text style={[styles.screenName, { marginBottom: 20, fontFamily: "rubik-bold", fontSize: 20 }]}>Músicas Sugeridas</Text>

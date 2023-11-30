@@ -183,8 +183,8 @@ async function getSpotifyData(songTitle:string, artistName = '') {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       auth: {
-        username: client_id,
-        password: client_secret,
+        username: client_id as string,
+        password: client_secret as string,
       },
     };
     const responseToken = await axios.post(`https://accounts.spotify.com/api/token`, data, config);
@@ -276,7 +276,7 @@ async function getSpotifyData(songTitle:string, artistName = '') {
           genero: genero || letraToEdit.genero,
           artistId: artistData.value,
         };
-        console.log(letraData);
+
         await setDoc(letraRef, letraData, { merge: true }); // Atualiza os campos nome e genero, mantendo os outros campos intactos
         setLetraToEdit(null);
         setModalVisible(false);
